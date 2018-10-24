@@ -77,10 +77,10 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <ForcedIncludeFiles>%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\Gietarka_Arduino;$(ProjectDir)..\..\..\..\OneDrive\Dokumenty\Arduino\libraries\TFT_HX8357-master;$(ProjectDir)..\..\..\..\Desktop\arduino-nightly\hardware\arduino\avr\libraries\EEPROM\src;$(ProjectDir)..\..\..\..\OneDrive\Dokumenty\Arduino\libraries\Adafruit-GFX-Library-master;$(ProjectDir)..\..\..\..\Desktop\arduino-nightly\hardware\arduino\avr\libraries\SPI\src;$(ProjectDir)..\..\..\..\Desktop\arduino-nightly\libraries;$(ProjectDir)..\..\..\..\Desktop\arduino-nightly\hardware\arduino\avr\libraries;$(ProjectDir)..\..\..\..\OneDrive\Dokumenty\Arduino\libraries;$(ProjectDir)..\..\..\..\Desktop\arduino-nightly\hardware\arduino\avr\cores\arduino;$(ProjectDir)..\..\..\..\Desktop\arduino-nightly\hardware\arduino\avr\variants\mega;$(ProjectDir)..\..\..\..\Desktop\gietarka\main;$(ProjectDir)..\..\..\..\Desktop\arduino-nightly\hardware\tools\avr\avr\include;$(ProjectDir)..\..\..\..\Desktop\arduino-nightly\hardware\tools\avr\avr\include\avr;$(ProjectDir)..\..\..\..\Desktop\arduino-nightly\hardware\tools\avr\lib\gcc\avr\4.8.1\include;$(ProjectDir)..\..\..\..\Desktop\arduino-nightly\hardware\tools\avr\lib\gcc\avr\4.9.2\include;$(ProjectDir)..\..\..\..\Desktop\arduino-nightly\hardware\tools\avr\lib\gcc\avr\4.9.3\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ForcedIncludeFiles>$(ProjectDir)__vm\.Gietarka_Arduino.vsarduino.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
+      <PreprocessorDefinitions>__AVR_ATmega2560__;_VMDEBUG=1;F_CPU=16000000L;ARDUINO=10900;ARDUINO_AVR_MEGA2560;ARDUINO_ARCH_AVR;__cplusplus=201103L;_VMICRO_INTELLISENSE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -107,9 +107,22 @@
     <DebuggerFlavor>VisualMicroDebugger</DebuggerFlavor>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="Drawers.ino">
+      <FileType>CppCode</FileType>
+    </None>
     <None Include="Gietarka_Arduino.ino">
       <FileType>CppCode</FileType>
     </None>
+    <None Include="Move.ino">
+      <FileType>CppCode</FileType>
+    </None>
+    <None Include="Sensors.ino">
+      <FileType>CppCode</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\Desktop\gietarka\main\EEPROMAnything.h" />
+    <ClInclude Include="__vm\.Gietarka_Arduino.vsarduino.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -16,6 +16,16 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Gietarka_Arduino.ino" />
+    <None Include="Drawers.ino" />
+    <None Include="Sensors.ino" />
+    <None Include="Move.ino" />
   </ItemGroup>
- 
+  <ItemGroup>
+    <ClInclude Include="__vm\.Gietarka_Arduino.vsarduino.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Desktop\gietarka\main\EEPROMAnything.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>
