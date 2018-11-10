@@ -63,7 +63,7 @@ void chooseOption()
 
 	}
 }
-//------------------------------------------------------------------------------------
+
 boolean Cancel(int startindex)
 {
 	uint8_t end = 1;
@@ -114,7 +114,7 @@ boolean Cancel(int startindex)
 		}
 	}
 }
-//------------------------------------------------------------------------------------
+
 void chooseOptionSettings()
 {
 	uint8_t end = 1;
@@ -156,27 +156,18 @@ void chooseOptionSettings()
 		{
 			switch (index)
 			{
-			case 0:       //tutaj zapis kata do EEPROM
+			case 0:       //Kolory
 			{
-
+				drawSetColor();
 				break;
 			}
-			case 1:       //tutaj zapis temperatury do EEPROM
+			case 1:       //O programie
 			{
-
+				drawAbout();
+				drawSettingsMenu(index, false, false);
 				break;
 			}
 			case 2:
-			{
-
-				break;
-			}
-			case 3:
-			{
-
-				break;
-			}
-			case 4:
 			{
 				index = 0;
 				end = 0;
