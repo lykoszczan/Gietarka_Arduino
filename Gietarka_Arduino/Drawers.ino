@@ -1,17 +1,20 @@
-#define ARRAYSIZE 4
 #define SELECTED_COLOR 0x00FF
 #define WARNING_COLOR 0xF800
 #define EDIT_COLOR 0xFF00
 
-void drawMainMenu(int select, boolean edit, boolean onlythisrow) //edit odpowiada za kolor podswietlenia tekstu, onlythisrow przerysowuje tylko wyselectowany wiersz
+void drawMainMenu(int select, boolean edit, boolean onlythisrow, bool isNewWindow) //edit odpowiada za kolor podswietlenia tekstu, onlythisrow przerysowuje tylko wyselectowany wiersz
 {
-	if (!onlythisrow)
+	if (isNewWindow)
 		tft.fillScreen(TFT_BLACK);
-	tft.setCursor(0, 10);
+
+	tft.setTextSize(4);
 	tft.setTextColor(GLOBAL_TEXT_COLOR);
+	tft.setCursor(190, 10);
+	tft.println("MENU");
+	tft.setCursor(0, 70);
 
-
-	for (uint8_t i = 0; i < ARRAYSIZE; i++) {
+	for (uint8_t i = 0; i < MenuItemsCount; i++)
+	{
 		tft.setTextSize(3);
 		if (i == select)
 		{
@@ -22,7 +25,7 @@ void drawMainMenu(int select, boolean edit, boolean onlythisrow) //edit odpowiad
 		}
 		if (i != select)
 		{
-			tft.setTextColor(GLOBAL_TEXT_COLOR);
+			tft.setTextColor(GLOBAL_TEXT_COLOR,TFT_BLACK);
 		}
 		if (!onlythisrow)
 			tft.println(items[i]);
@@ -36,13 +39,38 @@ void drawMainMenu(int select, boolean edit, boolean onlythisrow) //edit odpowiad
 		tft.setTextSize(1);
 		tft.println();
 
+		drawDegreeSymbol(i);
 	}
 
 }
 
-void drawSettingsMenu(int select, boolean edit, boolean onlythisrow) //edit odpowiada za kolor podswietlenia tekstu, onlythisrow przerysowuje tylko wyselectowany wiersz
+void drawDegreeSymbol(int menuIndex)
 {
-	if (!onlythisrow)
+	int firstPixel;
+	int topPixel;
+	const int space = 20; // szerokosc jednej cyfry w pikselach dla rozmiaru czcionki = 3
+	int position;
+	if (menuIndex == 0 || menuIndex == 1)
+	{
+		if (menuIndex == 0)
+		{
+			firstPixel = 170;
+			topPixel = 75;
+			position = space * (String(defaultAngle).length() - 1) + firstPixel;
+		}
+		if (menuIndex == 1)
+		{
+			firstPixel = 312;
+			topPixel = 107;
+			position = space * (String(defaultTemp).length() - 1) + firstPixel;
+		}
+		tft.drawCircle(position, topPixel, 5, GLOBAL_TEXT_COLOR);
+	}
+}
+
+void drawSettingsMenu(int select, boolean edit, boolean onlythisrow, bool isNewWindow) //edit odpowiada za kolor podswietlenia tekstu, onlythisrow przerysowuje tylko wyselectowany wiersz
+{
+	if (isNewWindow)
 		tft.fillScreen(TFT_BLACK);
 
 	tft.setCursor(120, 10);
@@ -52,7 +80,7 @@ void drawSettingsMenu(int select, boolean edit, boolean onlythisrow) //edit odpo
 	tft.setCursor(0, 100);
 
 	for (uint8_t i = 0; i < SETTINGS; i++) {
-		tft.setTextSize(2);
+		tft.setTextSize(3);
 		if (i == select)
 		{
 			if (edit)
@@ -62,14 +90,14 @@ void drawSettingsMenu(int select, boolean edit, boolean onlythisrow) //edit odpo
 		}
 		if (i != select)
 		{
-			tft.setTextColor(GLOBAL_TEXT_COLOR);
+			tft.setTextColor(GLOBAL_TEXT_COLOR,TFT_BLACK);
 		}
 		if (!onlythisrow)
-			tft.println(itemsetting[i]);
+			tft.println(itemsSetting[i]);
 		else
 		{
 			if (i == select)
-			  tft.println(itemsetting[i]);
+			  tft.println(itemsSetting[i]);
 			else
 			  tft.println("");
 		}
@@ -80,6 +108,7 @@ void drawSettingsMenu(int select, boolean edit, boolean onlythisrow) //edit odpo
 
 	if (select < SETTINGS)
 	{
+		tft.fillRoundRect(200, 250, 80, 50, 5, TFT_BLACK);
 		tft.drawRoundRect(200, 250, 80, 50, 5, TFT_WHITE);
 	}
 	else
@@ -94,75 +123,138 @@ void drawSetAngle()
 {
 	uint8_t move = 0;
 	int beforemove;
-	items[0] = "1. Kat: " + String(defaultAngle);
-	drawMainMenu(0, true, true);
-	move = waitforactionY(200);
+	items[0] = "1. Kat: " + String(defaultAngle) + " ";
+	drawMainMenu(0, true, true, false);
+	move = waitforactionXY(200);
 	do
 	{
 		beforemove = defaultAngle;
-		move = waitforactionY(50);
-		if (move == 1 && defaultAngle<180)
+		move = waitforactionXY(50);
+		if (move == 1 && defaultAngle<MAX_ANGLE)
 			defaultAngle++;
-		if (move == 3 && defaultAngle>0)
+		if (move == 3 && defaultAngle>MIN_ANGLE)
 			defaultAngle--;
-		items[0] = "1. Kat: " + String(defaultAngle);
+		items[0] = "1. Kat: " + String(defaultAngle) + " ";
 		if (String(defaultAngle).length() != String(beforemove).length())
-			drawMainMenu(0, true, false);
+			drawMainMenu(0, true, false, true);
 		else
-			drawMainMenu(0, true, true);
+			drawMainMenu(0, true, true, false);
 
-	} while (move != 5);
+	} while (move != 5 && move != 4);
 	EEPROM_writeAnything(EEPROM_LAST_ANGLE, defaultAngle);
 
-	drawMainMenu(0, false, true);
+	drawMainMenu(0, false, true, false);
 }
 
 void drawSetTemp()
 {
 	uint8_t move;
-	int wait = 100;
+	int wait = 30;
 	int beforemove;
 	items[1] = "2. Temperatura: " + String(defaultTemp) + " C";
-	drawMainMenu(1, true, true);
-	move = waitforactionY(200);
+	drawMainMenu(1, true, true, false);
+	move = waitforactionXY(200);
 	do
 	{
 		beforemove = defaultTemp;
-		move = waitforactionY(wait);
-		if (joypos == 0 && move == 1 && defaultTemp<490)// na sztywno ustawiona górna granica temperatury aby nie mozna bylo podwyzszac jej w nieskonczonosc
-		{
-			defaultTemp = defaultTemp + 10;
-		}
-		if (joypos != 0 && move == 1 && defaultTemp<500)
+		move = waitforactionXY(wait);
+		if (move == 1 && defaultTemp<MAX_TEMP)
 		{
 			defaultTemp++;
 		}
-		if (joypos > 680 && move == 3 && defaultTemp>10)
-		{
-			defaultTemp = defaultTemp - 10;
-		}
-		if (joypos < 680 && move == 3 && defaultTemp>10)
+		if (move == 3 && defaultTemp>MIN_TEMP)
 		{
 			defaultTemp--;
 		}
 
 		items[1] = "2. Temperatura: " + String(defaultTemp) + " C";
 		if (String(defaultTemp).length() != String(beforemove).length())
-			drawMainMenu(1, true, false);
+			drawMainMenu(1, true, false, true);
 		else
-			drawMainMenu(1, true, true);
+			drawMainMenu(1, true, true, false);
 
-	} while (move != 5);
+	} while (move != 5 && move != 4);
 
 	EEPROM_writeAnything(EEPROM_LAST_TEMP, defaultTemp);
 
-	drawMainMenu(1, false, true);
+	drawMainMenu(1, false, true, false);
 }
 
 void drawWorkView()
 {
 	bool isCanceled = false;
+	double currentTemp, currentAngle;
+	int moveHorz, moveVert;
+	
+	refreshWorkView();
 
+	while (true)
+	{
+		currentTemp = mlx.readObjectTempC();
+		currentAngle = getAngle();
+		/*  po zakonczneniu grzania material musi ostygnac, ewentualnie w momencie rozpoczecia giecia wylaczyc grzalke - do ustalenia
+		if (currentTemp >= defaultTemp && currentAngle >= defaultAngle)
+		{
+			//StopPIDController
+			//break
+		}
+		*/
+
+		drawAngle();
+		drawTemperature();
+		//RunPIDController
+
+		showWarning(currentTemp);
+
+		// w celach bezpieczenstwa
+		// jezeli uzytkownik nie wykona zadnej czynnosci przez ustalony z gory czas. wylaczamy grzalke
+		moveHorz = analogRead(X_pin);
+		moveVert = analogRead(Y_pin);
+		if (moveVert < 220 || moveVert > 450 || moveHorz < 240 || moveHorz > 450 || currentAngle > 10.00)
+		{
+			timeElapsed = millis();
+		}
+
+		if (digitalRead(SW_pin) == LOW || (moveHorz < 220)) // czy jest wcisniety analog lub wychylony w lewo
+		{
+			drawAnswer(true, 1);
+			if (getYesNoAwser(1))
+			{
+				isCanceled = true;
+				break;
+			}
+			else
+			{
+				refreshWorkView();
+			}
+		}
+		if ((millis() - timeElapsed) > TIME_TO_STOP_HEAT)
+		{
+			drawStopHeat();
+			if (getYesNoAwser(1))
+			{
+				timeElapsed = millis();
+				refreshWorkView();
+			}
+			else
+			{				
+				isCanceled = true;
+				break;
+			}
+		}
+	}
+
+	while (!isCanceled)
+	{
+		int move = waitforactionY(200);
+		break;
+	}
+
+	drawMainMenu(3, false, false, true);
+}
+
+void refreshWorkView()
+{
 	tft.fillScreen(TFT_BLACK);
 	tft.setTextSize(2);
 	tft.setCursor(40, 50);
@@ -175,50 +267,20 @@ void drawWorkView()
 	tft.drawRoundRect(260, 100, 180, 100, 3, TFT_WHITE);  //Temperatura
 	delay(200);  //opoznienie zeby mozna bylo w ogole wejsc w ta opcje bo tak od razu wywalo poniewaz przerywalo ponizej
 	drawEndWarm();
+}
 
-	while (true)
-	{
-		drawAngle();
-		drawTemperature();
-
-		showWarning(mlx.readObjectTempC());
-
-		if (digitalRead(SW_pin) == LOW)
-		{
-			drawAnswer(true, 1);
-			if (Cancel(1))
-			{
-				isCanceled = true;
-				break;
-			}
-			else
-			{
-				tft.fillScreen(TFT_BLACK);
-				tft.setTextSize(2);
-				tft.setCursor(40, 50);
-				tft.setTextColor(GLOBAL_TEXT_COLOR, TFT_BLACK);
-				tft.println("Kat = " + String(defaultAngle));
-				tft.drawRoundRect(40, 100, 180, 100, 3, TFT_WHITE);  //K¹t
-
-				tft.setCursor(260, 50);
-				tft.println("Temperatura = " + String(defaultTemp));
-				tft.drawRoundRect(260, 100, 180, 100, 3, TFT_WHITE);  //Temperatura
-				delay(200);  //opoznienie zeby mozna bylo w ogole wejsc w ta opcje bo tak od razu wywalo poniewaz przerywalo ponizej
-				drawEndWarm();
-			}
-		}
-
-		delay(100);
-	}
-
-
-	while (!isCanceled)
-	{
-		int move = waitforactionY(200);
-		break;
-	}
-
-	drawMainMenu(2, false, false);
+void drawStopHeat()
+{
+	tft.fillScreen(TFT_BLACK);
+	tft.setTextSize(3);
+	tft.setCursor(0, 50);
+	tft.setTextColor(GLOBAL_TEXT_COLOR, TFT_BLACK);
+	tft.println("Urzadzenie jest nieuzywane \nGrzalka zostala wylaczona  \n    Rozpoczac grzanie?");
+	tft.setCursor(100, 220);
+	tft.println("TAK");
+	tft.setTextColor(GLOBAL_TEXT_COLOR, SELECTED_COLOR);
+	tft.setCursor(335, 220);
+	tft.println("NIE");
 }
 
 void drawAnswer(boolean firsttime, int index)
@@ -294,7 +356,7 @@ void showWarning(double temp)
 
 void drawTemperature()
 {
-	double temp = mlx.readObjectTempC();
+	double temp = mlx.readObjectTempC(); 
 	String outText = String(temp);
 	outText = outText.substring(0, 5);
 	tft.setCursor(270, 130);
@@ -321,51 +383,8 @@ void drawTemperature()
 
 void drawAngle()
 {
-	while (true)
-	{
-		accelerometer.getAcceleration(&ax, &ay, &az);
-		ax_sum = ax_sum + ax;
-		ay_sum = ay_sum + ay;
-		az_sum = az_sum + az;
-		sample++;
-
-		if (sample == sample_no)
-		{
-			// mean values
-			x = ax_sum / sample_no;
-			y = ay_sum / sample_no;
-			z = az_sum / sample_no;
-
-			// Calculate of roll and pitch in deg
-			
-			angle_x = atan2(x, sqrt(square(y) + square(z))) / (pi / 180);
-			if (z < 0)
-			  angle_y = atan2(y, sqrt(square(x) + square(z))) / (pi / 180);
-			else
-			{
-				angle_y = atan2(y, sqrt(square(x) + square(z))) / (pi / 180);
-				angle_y = 180 - angle_y;
-			}
-			// Reset values for next aproximation   
-			sample = 0;
-			ax_sum = 0;
-			ay_sum = 0;
-			az_sum = 0;
-
-			Serial.println("Angle: " + String(angle_y));
-			Serial.println("Y: " + String(y));
-			Serial.println("X: " + String(x));
-			Serial.println("Z: " + String(z));
-
-			break;
-
-			//Serial.print(angle_x);
-			//Serial.print("\t"); // \t = tablator 
-
-		}
-	}
-
-	String outText = String(abs(angle_y));
+	double currentAngle = abs(getAngle());
+	String outText = String(abs(currentAngle));
     
 	if (outText.length() < 5)
 	{
@@ -376,7 +395,7 @@ void drawAngle()
 
 	tft.setCursor(60, 130);
 	tft.setTextSize(4);
-	if (angle_y<defaultAngle)
+	if (currentAngle<defaultAngle)
 	{
 		tft.setTextColor(WARNING_COLOR, TFT_BLACK);
 		tft.println(outText);
@@ -418,7 +437,7 @@ void drawSetColor()
 	uint8_t move = 0;
 	int index = 0;
 	
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < ColorsCount; i++)
 	{
 		if (ColorsValues[i] == GLOBAL_TEXT_COLOR)
 		{
@@ -429,15 +448,14 @@ void drawSetColor()
 
 	String actualColor = Colors[index];
 
-	itemsetting[0] = "1. Kolor tekstu: " + String(actualColor);
-	drawSettingsMenu(0, true, true);
-	move = waitforactionY(200);
+	drawSettingsMenu(0, true, true, false);
+	move = waitforactionXY(200);
 	do
 	{
-		move = waitforactionY(150);
+		move = waitforactionXY(150);
 		if (move == 1)
 		{
-			if (index < 2)
+			if (index < ColorsCount - 1)
 				index++;
 			else
 				index = 0;
@@ -447,17 +465,55 @@ void drawSetColor()
 			if (index > 0)
 				index--;
 			else
-				index = 3;
+				index = ColorsCount - 1;
 		}
 		actualColor = Colors[index];
 		GLOBAL_TEXT_COLOR = ColorsValues[index];
-		itemsetting[0] = "1. Kolor tekstu: " + String(actualColor);
-		if (move != 5)
-			drawSettingsMenu(0, true, false);
+		itemsSetting[0] = "1. Kolor tekstu: " + String(actualColor);
+		if (move != 5 && move !=4)
+			drawSettingsMenu(0, true, false, true);
 		else
-			drawSettingsMenu(0, false, true);
+			drawSettingsMenu(0, false, false, true);
 
-	} while (move != 5);
+	} while (move != 5 && move != 4);
 	EEPROM_writeAnything(EEPROM_LAST_COLOR, index);
 
+}
+
+void drawProfileList(int select, bool isNewWindow)
+{
+	if(isNewWindow)
+      tft.fillScreen(TFT_BLACK);
+
+	tft.setCursor(70, 10);
+	tft.setTextSize(4);
+	tft.setTextColor(GLOBAL_TEXT_COLOR);
+	tft.println("WYBIERZ PROFIL");
+	tft.setCursor(0, 70);
+
+
+	for (uint8_t i = 0; i < ProfilesCount; i++)
+	{
+		tft.setTextSize(3);
+		if (i == select)
+		{
+			tft.setTextColor(GLOBAL_TEXT_COLOR, SELECTED_COLOR);
+		}
+		if (i != select)
+		{
+			tft.setTextColor(GLOBAL_TEXT_COLOR, TFT_BLACK);
+		}
+		tft.println(ProfilesValues[i].name + " K: " + String(ProfilesValues[i].angleValue) + " T: " + String(ProfilesValues[i].tempValue));
+	}
+
+	if (select < ProfilesCount)
+	{
+		tft.fillRoundRect(200, 250, 80, 50, 5, TFT_BLACK);
+		tft.drawRoundRect(200, 250, 80, 50, 5, TFT_WHITE);
+	}
+	else
+		tft.fillRoundRect(200, 250, 80, 50, 5, SELECTED_COLOR);
+
+	tft.fillTriangle(240, 285, 240, 265, 220, 275, TFT_WHITE);
+	tft.fillRect(240, 270, 20, 10, TFT_WHITE);
 }
