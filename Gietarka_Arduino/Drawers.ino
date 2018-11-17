@@ -1,7 +1,3 @@
-#define SELECTED_COLOR 0x00FF
-#define WARNING_COLOR 0xF800
-#define EDIT_COLOR 0xFF00
-
 void drawMainMenu(int select, boolean edit, boolean onlythisrow, bool isNewWindow) //edit odpowiada za kolor podswietlenia tekstu, onlythisrow przerysowuje tylko wyselectowany wiersz
 {
 	if (isNewWindow)
@@ -184,12 +180,15 @@ void drawWorkView()
 {
 	bool isCanceled = false;
 	double currentTemp, currentAngle;
+	double lastAngle;
 	int moveHorz, moveVert;
 	
 	refreshWorkView();
+	currentAngle = 0;
 
 	while (true)
 	{
+		lastAngle = currentAngle;
 		currentTemp = mlx.readObjectTempC();
 		currentAngle = getAngle();
 		/*  po zakonczneniu grzania material musi ostygnac, ewentualnie w momencie rozpoczecia giecia wylaczyc grzalke - do ustalenia
@@ -206,32 +205,40 @@ void drawWorkView()
 
 		showWarning(currentTemp);
 
-		// w celach bezpieczenstwa
+
 		// jezeli uzytkownik nie wykona zadnej czynnosci przez ustalony z gory czas. wylaczamy grzalke
+		// ----- w celach bezpieczenstwa
 		moveHorz = analogRead(X_pin);
 		moveVert = analogRead(Y_pin);
-		if (moveVert < 220 || moveVert > 450 || moveHorz < 240 || moveHorz > 450 || currentAngle > 10.00)
+		if (moveVert < MIDDLE_MIN_Y || moveVert > MIDDLE_MAX_Y || moveHorz < MIDDLE_MIN_X || moveHorz > MIDDLE_MAX_X)
 		{
 			timeElapsed = millis();
 		}
-
-		if (digitalRead(SW_pin) == LOW || (moveHorz < 220)) // czy jest wcisniety analog lub wychylony w lewo
+		// tutaj powinno byc jakies probkowanie bo co petle nie bedzie takich duzych przeskokow
+		if ((lastAngle > currentAngle + 5) || (lastAngle < currentAngle - 5))
 		{
-			drawAnswer(true, 1);
-			if (getYesNoAwser(1))
+			timeElapsed = millis();
+		}
+		// -----
+
+		if (digitalRead(SW_pin) == LOW || (moveHorz < MIDDLE_MIN_X)) // czy jest wcisniety analog lub wychylony w lewo
+		{
+			drawAnswer(true, 1, 0);
+			if (getYesNoAwser(1,0))
 			{
 				isCanceled = true;
 				break;
 			}
 			else
 			{
+				timeElapsed = millis();
 				refreshWorkView();
 			}
 		}
 		if ((millis() - timeElapsed) > TIME_TO_STOP_HEAT)
 		{
 			drawStopHeat();
-			if (getYesNoAwser(1))
+			if (getYesNoAwser(1,1))
 			{
 				timeElapsed = millis();
 				refreshWorkView();
@@ -271,19 +278,19 @@ void refreshWorkView()
 
 void drawStopHeat()
 {
-	tft.fillScreen(TFT_BLACK);
+	tft.fillScreen(TFT_RED);
 	tft.setTextSize(3);
-	tft.setCursor(0, 50);
-	tft.setTextColor(GLOBAL_TEXT_COLOR, TFT_BLACK);
-	tft.println("Urzadzenie jest nieuzywane \nGrzalka zostala wylaczona  \n    Rozpoczac grzanie?");
+	tft.setCursor(5, 50);
+	tft.setTextColor(TFT_BLACK, TFT_BLACK);
+	tft.println("Urzadzenie jest nieuzywane \n Grzalka zostala wylaczona  \n    Rozpoczac grzanie?");
 	tft.setCursor(100, 220);
 	tft.println("TAK");
-	tft.setTextColor(GLOBAL_TEXT_COLOR, SELECTED_COLOR);
+	tft.setTextColor(TFT_BLACK, SELECTED_COLOR);
 	tft.setCursor(335, 220);
 	tft.println("NIE");
 }
 
-void drawAnswer(boolean firsttime, int index)
+void drawAnswer(boolean firsttime, int index, int StyleIndex)
 {
 	if (firsttime)
 	{
@@ -304,11 +311,17 @@ void drawAnswer(boolean firsttime, int index)
 	{
 		tft.setTextSize(3);
 		tft.setCursor(100, 220);
-		tft.setTextColor(GLOBAL_TEXT_COLOR, SELECTED_COLOR);
+		if(StyleIndex == 1)
+		  tft.setTextColor(Styles[0].textColor, SELECTED_COLOR);
+		else
+		  tft.setTextColor(GLOBAL_TEXT_COLOR, SELECTED_COLOR);
 		tft.println(answers[index]);
 
 		tft.setCursor(335, 220);
-		tft.setTextColor(GLOBAL_TEXT_COLOR, TFT_BLACK);
+		if (StyleIndex == 1)
+		  tft.setTextColor(Styles[0].textColor, Styles[0].BackgroundColor);
+		else
+		  tft.setTextColor(GLOBAL_TEXT_COLOR, TFT_BLACK);
 		tft.println(answers[index + 1]);
 
 	}
@@ -316,11 +329,17 @@ void drawAnswer(boolean firsttime, int index)
 	{
 		tft.setTextSize(3);
 		tft.setCursor(335, 220);
-		tft.setTextColor(GLOBAL_TEXT_COLOR, SELECTED_COLOR);
+		if (StyleIndex == 1)
+			tft.setTextColor(Styles[0].textColor, SELECTED_COLOR);
+		else
+			tft.setTextColor(GLOBAL_TEXT_COLOR, SELECTED_COLOR);
 		tft.println(answers[index]);
 
 		tft.setCursor(100, 220);
-		tft.setTextColor(GLOBAL_TEXT_COLOR, TFT_BLACK);
+		if (StyleIndex == 1)
+			tft.setTextColor(Styles[0].textColor, Styles[0].BackgroundColor);
+		else
+			tft.setTextColor(GLOBAL_TEXT_COLOR, TFT_BLACK);
 		tft.println(answers[index - 1]);
 
 	}

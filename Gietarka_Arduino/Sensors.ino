@@ -42,19 +42,19 @@ int waitforactionXY(int wait)
 			zwrot = 5;
 			break;
 		}
-	} while ((moveVert > 220 && moveVert < 450) && (moveHorz > 240 && moveHorz < 450));
+	} while ((moveVert > MIDDLE_MIN_Y && moveVert < MIDDLE_MAX_Y) && (moveHorz > MIDDLE_MIN_X && moveHorz < MIDDLE_MAX_X));
 	if (zwrot == 0)
 	{
-		if (moveVert > 220 && moveVert < 450)
+		if (moveVert > MIDDLE_MIN_Y && moveVert < MIDDLE_MAX_Y)
 		{
-			if (moveHorz >= 450)
-				zwrot = 2;  // prawo ------  jako wcisniecie
+			if (moveHorz >= MIDDLE_MAX_X)
+				zwrot = 2;  // LEWO 
 			else
-				zwrot = 4;  // lewo    
+				zwrot = 4;  // PRAWO  ------  jako wcisniecie 
 		}
 		else
 		{
-			if (moveVert >= 450)
+			if (moveVert >= MIDDLE_MAX_Y)
 				zwrot = 3;  // dó³
 			else
 				zwrot = 1;  //góra    
@@ -80,10 +80,10 @@ int waitforactionX(int wait)
 			zwrot = 5;
 			break;
 		}
-	} while (joymove > 240 && joymove < 450);
+	} while (joymove > MIDDLE_MIN_X && joymove < MIDDLE_MAX_X);
 	if (zwrot == 0)
 	{
-		if (joymove >= 450)
+		if (joymove >= MIDDLE_MAX_X)
 			zwrot = 2;  // prawo
 		else
 			zwrot = 4;  //lewo    

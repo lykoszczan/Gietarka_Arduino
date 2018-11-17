@@ -26,10 +26,19 @@ String items[MenuItemsCount] = { "1. Kat: ",
 
 // Definicja elementów menu ustawienieñ
 #define SETTINGS 2 
+
 String itemsSetting[SETTINGS] = { 
 "1. Kolor tekstu",
 "2. O programie"
 };
+
+// kolor tekstu
+int GLOBAL_TEXT_COLOR;
+
+// wlasne kolory
+#define SELECTED_COLOR 0x00FF
+#define WARNING_COLOR 0xF800
+#define EDIT_COLOR 0xFF00
 
 // Definicja dostêpnych kolorów wyœwietlania tekstu
 String Colors[4] = {
@@ -73,8 +82,21 @@ Profiles ProfilesValues[ProfilesCount] = {
 	Profile5
 };
 
-// Definicja elementów wyboru odpowiedzi w przypadku przerwania grzania
+// Definicja elementów wyboru odpowiedzi w wymaganej interakcji uzytkownika
 String answers[2] = { "TAK", "NIE" };
+
+struct ViewStyle {
+	int textColor;
+	int BackgroundColor;
+};
+
+//styl dla widoku zatrzymania grzania
+#define Style1 {TFT_BLACK,TFT_RED}
+
+ViewStyle Styles[1] = {
+	Style1
+};
+
 
 // adresy w pamiêci EEPROM do zapisu i odczytu ustawieñ
 int EEPROM_LAST_ANGLE = 0;
@@ -87,9 +109,9 @@ int EEPROM_LAST_COLOR = 5;
 #define MAX_TEMP 380
 #define MIN_TEMP 30
 
-// czas po którym grzalka zostanie wylaczona jesli program wykryje ze uzytkownik nie wykonuje zadnych czynnosci
-const uint16_t TIME_TO_STOP_HEAT = 3000;
-uint16_t timeElapsed;
+// czas [ms] po którym grzalka zostanie wylaczona jesli program wykryje ze uzytkownik nie wykonuje zadnych czynnosci
+const unsigned long TIME_TO_STOP_HEAT = 120000;
+unsigned long timeElapsed;
 
 // kierunek wychylenia ga³ki joysticka
 uint8_t dirct;
@@ -100,18 +122,20 @@ uint8_t joyIndex;
 int defaultTemp;
 int defaultAngle;
 
-// kolor tekstu
-int GLOBAL_TEXT_COLOR;
-
 // joystick
-const uint8_t SW_pin = 6; // digital pin connected to switch output
+const uint8_t SW_pin = A2; // A2 - ustawione jako cyfrowy pin
 const uint8_t Y_pin = A0; // A0 y - góra/dó³
 const uint8_t X_pin = A1; // A1 x - prawo/lewo
 
-struct joyctickMove {
-	int direction; // 1 - góra, 3 - dó³, 2 - prawo, 4 - lewo
-	int turn;
-};
+// zakresy wychylenia drazka  //przedzialy dla 5V
+#define MIDDLE_MIN_X 200	//minimalna wartosc w srodkowym polozeniu
+#define MIDDLE_MIN_Y 200	//minimalna wartosc w srodkowym polozeniu
+#define MIDDLE_MAX_X 800    //maksymalna wartosc w srodkowym polozeniu
+#define MIDDLE_MAX_Y 800    //maksymalna wartosc w srodkowym polozeniu
+
+// dla 3.3V
+// przedzialy X: 362 - œrodek, 687 - prawo, 0 - lewo 
+// przedzia³y Y: 332 - œrodek, 687 - dó³, 0 - góra
 
 // Ekran LCD
 TFT_HX8357 tft = TFT_HX8357();
@@ -121,14 +145,6 @@ Adafruit_MLX90614 mlx = Adafruit_MLX90614();
 
 // ¯yroskop
 MPU6050 accelerometer;
-
-// drugi sposob pomiaru kata - usunac w finalnej wersji
-//const float alpha = 0.5;
-//
-//double fXg = 0;
-//double fYg = 0;
-//double fZg = 0;
-
 
 const float pi = 3.141592;
 const int sample_no = 100; // liczba probek potrzebnych do jednego pomiaru kata
@@ -141,7 +157,7 @@ long ax_sum, ay_sum, az_sum;
 
 void setup() {
 	Wire.begin();
-	Serial.begin(38400);
+	Serial.begin(9600);
 
 	accelerometer.initialize();
 

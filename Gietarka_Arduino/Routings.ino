@@ -82,7 +82,7 @@ void SelectActionMainMenu(int index)
 	}
 }
 
-boolean getYesNoAwser(int startIndex)
+boolean getYesNoAwser(int startIndex, int styleNumber)
 {
 	uint8_t end = 1;
 	while (end != 0)
@@ -95,12 +95,12 @@ boolean getYesNoAwser(int startIndex)
 				if (startIndex == 1)
 				{
 					startIndex = 0;
-					drawAnswer(false, startIndex);
+					drawAnswer(false, startIndex, styleNumber);
 				}
 				else
 				{
 					startIndex = 1;
-					drawAnswer(false, startIndex);
+					drawAnswer(false, startIndex, styleNumber);
 				}
 				break;
 			}
@@ -109,12 +109,12 @@ boolean getYesNoAwser(int startIndex)
 				if (startIndex == 1)
 				{
 					startIndex = 0;
-					drawAnswer(false, startIndex);
+					drawAnswer(false, startIndex, styleNumber);
 				}
 				else
 				{
 					startIndex = 1;
-					drawAnswer(false, startIndex);
+					drawAnswer(false, startIndex, styleNumber);
 				}
 				break;
 			}
