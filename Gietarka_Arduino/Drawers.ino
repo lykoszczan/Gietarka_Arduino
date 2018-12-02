@@ -1,5 +1,7 @@
 void drawMainMenu(int select, boolean edit, boolean onlythisrow, bool isNewWindow) //edit odpowiada za kolor podswietlenia tekstu, onlythisrow przerysowuje tylko wyselectowany wiersz
 {
+	int textColor;
+
 	if (isNewWindow)
 		tft.fillScreen(TFT_BLACK);
 
@@ -11,17 +13,29 @@ void drawMainMenu(int select, boolean edit, boolean onlythisrow, bool isNewWindo
 
 	for (uint8_t i = 0; i < MenuItemsCount; i++)
 	{
+		if (!isAngleSet && i == 0)
+		{
+			textColor = WARNING_COLOR;
+		}
+		else if (!isTempSet && i == 1)
+		{
+			textColor = WARNING_COLOR;
+		}
+		else
+		{
+			textColor = GLOBAL_TEXT_COLOR;
+		}
 		tft.setTextSize(3);
 		if (i == select)
 		{
 			if (edit)
-				tft.setTextColor(GLOBAL_TEXT_COLOR, EDIT_COLOR);
+				tft.setTextColor(textColor, EDIT_COLOR);
 			else
-				tft.setTextColor(GLOBAL_TEXT_COLOR, SELECTED_COLOR);
+				tft.setTextColor(textColor, SELECTED_COLOR);
 		}
 		if (i != select)
 		{
-			tft.setTextColor(GLOBAL_TEXT_COLOR,TFT_BLACK);
+			tft.setTextColor(textColor,TFT_BLACK);
 		}
 		if (!onlythisrow)
 			tft.println(items[i]);
@@ -35,12 +49,116 @@ void drawMainMenu(int select, boolean edit, boolean onlythisrow, bool isNewWindo
 		tft.setTextSize(1);
 		tft.println();
 
-		drawDegreeSymbol(i);
+		drawDegreeSymbol(i, textColor);
+	}
+	if(onlythisrow || isNewWindow)
+	  drawSetHint();
+
+}
+
+void drawSetHint() // funkcja rysujaca podpowiedz zeby ustawic wartosci przed rozpoczeciem grzania, specjalnie dla Skalskiego
+{
+	tft.setTextSize(4);
+	tft.setTextColor(WARNING_COLOR, TFT_BLACK);
+	tft.fillRect(0, 270, 480, 50, TFT_BLACK);
+	if (!isAngleSet && !isTempSet)
+	{
+		tft.setCursor(70, 280);
+		tft.println("USTAW WARTOSCI");
+	}
+	else if (!isAngleSet)
+	{
+		tft.setCursor(140, 280);
+		tft.println("USTAW KAT");
+	}
+	else if (!isTempSet)
+	{
+		tft.setCursor(30, 280);
+		tft.println("USTAW TEMPERATURE");
 	}
 
 }
 
-void drawDegreeSymbol(int menuIndex)
+void drawSetHintBind() 
+{
+	tft.setTextSize(4);
+	tft.setTextColor(WARNING_COLOR, TFT_BLACK);
+	for (int i = 0; i < 6; i++)
+	{
+		delay(50);
+		tft.fillRect(0, 270, 480, 50, TFT_BLACK);
+		delay(50);
+		if (!isAngleSet && !isTempSet)
+		{
+			tft.setCursor(70, 280);
+			tft.println("USTAW WARTOSCI");
+		}
+		else if (!isAngleSet)
+		{
+			tft.setCursor(140, 280);
+			tft.println("USTAW KAT");
+		}
+		else if (!isTempSet)
+		{
+			tft.setCursor(30, 280);
+			tft.println("USTAW TEMPERATURE");
+		}
+	}
+}
+
+void drawCheckHeater()
+{
+	tft.fillScreen(TFT_BLACK);
+	tft.setTextSize(4);
+	tft.setTextColor(GLOBAL_TEXT_COLOR, TFT_BLACK);
+	tft.setCursor(35, 100);
+	tft.println("Sprawdzam grzalke");
+	//drawLoadGifERROR();
+	drawLoadGifOK();
+}
+
+void drawLoadGifERROR()
+{
+	for (int i = 0; i < 36; i++)
+	{
+		tft.drawPixel(degreesTab[i].x, degreesTab[i].y, TFT_RED);
+		delay(50);
+	}
+	delay(100);
+
+	tft.fillScreen(TFT_RED);
+	tft.setTextSize(3);
+	tft.setCursor(15, 50);
+	tft.setTextColor(TFT_BLACK);
+	tft.println("Brak zasilania na grzalce");
+	tft.setTextColor(TFT_BLACK, SELECTED_COLOR);
+	tft.setCursor(zeroPointX - 20, zeroPointY - 15);
+	tft.setTextSize(4);
+	tft.println("OK");
+
+	int waitForMove = waitforactionXY(50);
+}
+
+void drawLoadGifOK()
+{
+	for (int i = 0; i < 36; i++)
+	{
+		tft.drawPixel(degreesTab[i].x, degreesTab[i].y, TFT_RED);
+		delay(20);
+	}
+	delay(100);
+	for (int i = 0; i < 36; i++)
+	{
+		tft.drawPixel(degreesTab[i].x, degreesTab[i].y, TFT_GREEN);
+	}
+	tft.setTextColor(TFT_GREEN);
+	tft.setTextSize(4);
+	tft.setCursor(zeroPointX - 20, zeroPointY - 15);
+	tft.println("OK");
+	delay(500);
+}
+
+void drawDegreeSymbol(int menuIndex, int color)
 {
 	int firstPixel;
 	int topPixel;
@@ -60,7 +178,7 @@ void drawDegreeSymbol(int menuIndex)
 			topPixel = 107;
 			position = space * (String(defaultTemp).length() - 1) + firstPixel;
 		}
-		tft.drawCircle(position, topPixel, 5, GLOBAL_TEXT_COLOR);
+		tft.drawCircle(position, topPixel, 5, color);
 	}
 }
 
@@ -119,6 +237,8 @@ void drawSetAngle()
 {
 	uint8_t move = 0;
 	int beforemove;
+
+	isAngleSet = true;
 	items[0] = "1. Kat: " + String(defaultAngle) + " ";
 	drawMainMenu(0, true, true, false);
 	move = waitforactionXY(200);
@@ -147,6 +267,8 @@ void drawSetTemp()
 	uint8_t move;
 	int wait = 30;
 	int beforemove;
+
+	isTempSet = true;
 	items[1] = "2. Temperatura: " + String(defaultTemp) + " C";
 	drawMainMenu(1, true, true, false);
 	move = waitforactionXY(200);
@@ -182,28 +304,36 @@ void drawWorkView()
 	double currentTemp, currentAngle;
 	double lastAngle;
 	int moveHorz, moveVert;
-	
+	long timeToAprox;
+
 	refreshWorkView();
 	currentAngle = 0;
-
+	timeToAprox = millis();
 	while (true)
 	{
-		lastAngle = currentAngle;
+		// probkowanie co 10 sek czy zmienil sie kat od ostatniego pobranego, jesli nie to po okreslonym czasie bezczynnosc
+		if ((millis() - timeToAprox) > 10000)
+		{
+			lastAngle = currentAngle;
+			timeToAprox = millis();
+		}
+
 		currentTemp = mlx.readObjectTempC();
 		currentAngle = getAngle();
-		/*  po zakonczneniu grzania material musi ostygnac, ewentualnie w momencie rozpoczecia giecia wylaczyc grzalke - do ustalenia
-		if (currentTemp >= defaultTemp && currentAngle >= defaultAngle)
-		{
-			//StopPIDController
-			//break
-		}
-		*/
 
 		drawAngle();
 		drawTemperature();
 		//RunPIDController
 
 		showWarning(currentTemp);
+
+		/*  po zakonczneniu grzania material musi ostygnac, ewentualnie w momencie rozpoczecia giecia wylaczyc grzalke - do ustalenia
+		if (currentTemp >= defaultTemp && currentAngle >= defaultAngle)
+		{
+		//StopPIDController
+		//break
+		}
+		*/
 
 
 		// jezeli uzytkownik nie wykona zadnej czynnosci przez ustalony z gory czas. wylaczamy grzalke
@@ -214,7 +344,6 @@ void drawWorkView()
 		{
 			timeElapsed = millis();
 		}
-		// tutaj powinno byc jakies probkowanie bo co petle nie bedzie takich duzych przeskokow
 		if ((lastAngle > currentAngle + 5) || (lastAngle < currentAngle - 5))
 		{
 			timeElapsed = millis();
@@ -237,6 +366,7 @@ void drawWorkView()
 		}
 		if ((millis() - timeElapsed) > TIME_TO_STOP_HEAT)
 		{
+			//StopPIDController;
 			drawStopHeat();
 			if (getYesNoAwser(1,1))
 			{
@@ -488,7 +618,7 @@ void drawSetColor()
 		}
 		actualColor = Colors[index];
 		GLOBAL_TEXT_COLOR = ColorsValues[index];
-		itemsSetting[0] = "1. Kolor tekstu: " + String(actualColor);
+		itemsSetting[2] = "3. Kolor tekstu: " + String(actualColor);
 		if (move != 5 && move !=4)
 			drawSettingsMenu(0, true, false, true);
 		else
@@ -535,4 +665,36 @@ void drawProfileList(int select, bool isNewWindow)
 
 	tft.fillTriangle(240, 285, 240, 265, 220, 275, TFT_WHITE);
 	tft.fillRect(240, 270, 20, 10, TFT_WHITE);
+}
+
+void drawCalibartion()
+{
+	tft.fillScreen(TFT_BLACK);
+	tft.setTextSize(4);
+	tft.setTextColor(GLOBAL_TEXT_COLOR, TFT_BLACK);
+	tft.setCursor(60, 100);
+	tft.println("Kalibrowanie \nczujnika kata");
+	for (int i = 0; i < 10; i++)
+	{
+		for (int i = 0; i < 36; i++)
+		{
+			tft.drawPixel(degreesTab[i].x, degreesTab[i].y, TFT_RED);
+			delay(10);
+		}
+		for (int i = 0; i < 36; i++)
+		{
+			tft.drawPixel(degreesTab[i].x, degreesTab[i].y, TFT_BLACK);
+			delay(10);
+		}
+	}
+
+	tft.setTextColor(TFT_GREEN);
+	tft.setTextSize(4);
+	tft.setCursor(zeroPointX - 20, zeroPointY - 15);
+	tft.println("OK");
+
+	int waitForMowe = waitforactionXY(50);
+
+	drawSettingsMenu(0, false, false, true);
+
 }

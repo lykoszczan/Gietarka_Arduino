@@ -1,6 +1,5 @@
 void chooseOption()
 {
-	//dirct = waitforactionY(200);
 	dirct = waitforactionXY(200);
 	switch (dirct)
 	{
@@ -68,8 +67,23 @@ void SelectActionMainMenu(int index)
 		}
 		case 3:
 		{
-			timeElapsed = millis();
-			drawWorkView();
+			if (!isAngleSet || !isAngleSet)
+			{
+				drawSetHintBind();
+			}
+			else
+			{
+				if (checkHeater())
+				{
+					timeElapsed = millis();
+					drawWorkView();
+				}
+				else
+				{
+					drawMainMenu(3, false, false, true);
+				}
+
+			}
 			break;
 		}
 		case 4:
@@ -190,7 +204,7 @@ void chooseOptionSettings()
 			}
 			case 4: //lewo - na strzalce oznacza to powrot, na innej pozycji nic nie robi
 			{
-				if (joyIndex == 2)
+				if (joyIndex == SETTINGS)
 				{
 					joyIndex = 0;
 					end = 0;
@@ -201,18 +215,28 @@ void chooseOptionSettings()
 			{
 				switch (joyIndex)
 				{
-					case 0:       //Kolory
+					case 0:			//kalibracja
+					{
+						//drawCalibartion();
+						//RunCalibration();
+						break;
+					}
+					case 1:			//nastawy regulatora
+					{
+						break;
+					}
+					case 2:       //Kolory
 					{
 						drawSetColor();
 						break;
 					}
-					case 1:       //O programie
+					case 3:       //O programie
 					{
 						drawAbout();
 						drawSettingsMenu(joyIndex, false, false, true);
 						break;
 					}
-					case 2:		// strzalka
+					case 4:		// strzalka
 					{
 						joyIndex = 0;
 						end = 0;
@@ -256,6 +280,7 @@ void chooseProfile()
 			{
 				if (joyIndex != ProfilesCount)
 				{
+					isTempSet = true;
 					defaultAngle = ProfilesValues[joyIndex].angleValue;
 					defaultTemp = ProfilesValues[joyIndex].tempValue;
 					EEPROM_writeAnything(EEPROM_LAST_ANGLE, defaultAngle);
@@ -299,6 +324,7 @@ void chooseProfile()
 				}
 				else
 				{
+					isTempSet = true;
 					defaultAngle = ProfilesValues[joyIndex].angleValue;
 					defaultTemp = ProfilesValues[joyIndex].tempValue;
 					EEPROM_writeAnything(EEPROM_LAST_ANGLE, defaultAngle);

@@ -1,14 +1,14 @@
-int waitforactionY(int wait)
+锘縤nt waitforactionY(int wait) //o艣 pionowa
 {
 	int joymove;
 	int zwrot = 0;
-	// Delay dlatego, 縠 je渓i jest za kr髏ki to przeskakuje kilka razy 
+	// Delay dlatego, 偶e je艣li jest za kr贸tki to przeskakuje kilka razy 
 	delay(wait);
-	joymove = 1;  // g髍a
+	joymove = 1;  // g贸ra
 	do
 	{
-		joymove = analogRead(Y_pin);  // przedzialy X: 362 - 渞odek, 687 - prawo, 0 - lewo 
-								   // przedzia硑 Y: 332 - 渞odek, 687 - d蟪, 0 - g髍a
+		joymove = analogRead(Y_pin);  // przedzialy X: 362 - 艣rodek, 687 - prawo, 0 - lewo 
+								   // przedzia艂y Y: 332 - 艣rodek, 687 - d贸艂, 0 - g贸ra
 		joypos = joymove;
 		if (digitalRead(SW_pin) == LOW)
 		{
@@ -19,18 +19,18 @@ int waitforactionY(int wait)
 	if (zwrot == 0)
 	{
 		if (joymove >= 450)
-			zwrot = 3;  // d蟪
+			zwrot = 3;  // d贸艂
 		else
-			zwrot = 1;  //g髍a    
+			zwrot = 1;  //g贸ra    
 	}
 	return zwrot;
 }
 
-int waitforactionXY(int wait)
+int waitforactionXY(int wait) // obie osie
 {
 	int moveHorz, moveVert;
 	int zwrot = 0;
-	// Delay dlatego, 縠 je渓i jest za kr髏ki to przeskakuje kilka razy 
+	// Delay dlatego, 偶e je艣li jest za kr贸tki to przeskakuje kilka razy 
 	delay(wait);
 	do
 	{
@@ -55,25 +55,25 @@ int waitforactionXY(int wait)
 		else
 		{
 			if (moveVert >= MIDDLE_MAX_Y)
-				zwrot = 3;  // d蟪
+				zwrot = 3;  // d贸艂
 			else
-				zwrot = 1;  //g髍a    
+				zwrot = 1;  //g贸ra    
 		}
 	}
 	return zwrot;
 }
 
-int waitforactionX(int wait)
+int waitforactionX(int wait) // o艣 pozioma
 {
 	int joymove;
 	int zwrot = 0;
-	// Delay dlatego, 縠 je渓i jest za kr髏ki to przeskakuje kilka razy 
+	// Delay dlatego, 偶e je艣li jest za kr贸tki to przeskakuje kilka razy 
 	delay(wait);
-	joymove = 2;  // g髍a
+	joymove = 2;  // g贸ra
 	do
 	{
-		joymove = analogRead(X_pin);  // przedzialy X: 362 - 渞odek, 687 - prawo, 0 - lewo 
-								   // przedzia硑 Y: 332 - 渞odek, 687 - d蟪, 0 - g髍a
+		joymove = analogRead(X_pin);  // przedzialy X: 362 - 艣rodek, 687 - prawo, 0 - lewo 
+								   // przedzia艂y Y: 332 - 艣rodek, 687 - d贸艂, 0 - g贸ra
 		joypos = joymove;
 		if (digitalRead(SW_pin) == LOW)
 		{
@@ -93,29 +93,20 @@ int waitforactionX(int wait)
 
 double getAngle()
 {
-
-	//double pitch, roll;
-	//int Xg, Yg, Zg;
-
-	//accelerometer.getAcceleration(&Xg, &Yg, &Zg);
-
-	////Low Pass Filter
-	//fXg = Xg * alpha + (fXg * (1.0 - alpha));
-	//fYg = Yg * alpha + (fYg * (1.0 - alpha));
-	//fZg = Zg * alpha + (fZg * (1.0 - alpha));
-
-	////Roll & Pitch Equations
-	//if (fZg != 0)
-	//	roll = (atan2(-fYg, fZg)*180.0) / M_PI;
-	//else
-	//	roll = 0;
-
-	//return (180 - roll); // poniewaz plytka jest odwrocona do gory nogami, zobaczymy jak bedzie na urzadzeniu umieszczona
-	//-----
-	
+	const float pi = 3.141592;
+	const int sample_no = 100; // no of samples for aproximation
+	int16_t ax, ay, az;
+	float x, y, z;
+	int  sample = 0;
+	float _angle_x, angle_x, _angle_y, angle_y;
+	long ax_sum = 0, ay_sum = 0, az_sum = 0;
 	
 	while (true)
 	{
+		//accelerometer.setXAccelOffset(0);
+		//accelerometer.setYAccelOffset(0);
+		accelerometer.setZAccelOffset(2500);
+
 		accelerometer.getAcceleration(&ax, &ay, &az);
 		ax_sum = ax_sum + ax;
 		ay_sum = ay_sum + ay;
@@ -124,38 +115,41 @@ double getAngle()
 
 		if (sample == sample_no)
 		{
-			// U渞ednienie warto渃i
+			// mean values
 			x = ax_sum / sample_no;
 			y = ay_sum / sample_no;
 			z = az_sum / sample_no;
 
+			// Calculate of roll and pitch in deg
+			angle_x = atan2(x, sqrt(square(y) + square(z))) / (pi / 180);
+
 			angle_y = (atan2(-y, z)*180.0) / M_PI;
 			angle_y = 180 - abs(angle_y);
 
-			// Obliczenie kata wychylenia					
-			//if (z < 0)
-			//	angle_y = atan2(y, sqrt(square(x) + square(z))) / (pi / 180);
-			//else
-			//{
-			//	angle_y = atan2(y, sqrt(square(x) + square(z))) / (pi / 180);
-			//	angle_y = 180 - angle_y;
-			//}
-			// Reset warto渃i przed kolejnym pr骲kowaniem
+			if (angle_y < 0)
+				angle_y = 0;
+
+			// Reset values for next aproximation   
 			sample = 0;
 			ax_sum = 0;
 			ay_sum = 0;
 			az_sum = 0;
 
+			Serial.print(angle_x);
+			Serial.print("\t"); // \t = tablator 
+			Serial.println(angle_y);
+
 			return angle_y;
-
-			// W celach debugowania
-			Serial.println("Angle: " + String(angle_y));
-			Serial.println("Y: " + String(y));
-			Serial.println("X: " + String(x));
-			Serial.println("Z: " + String(z));
-
 			break;
 
 		}
 	}
+
 }
+
+bool checkHeater()
+{
+	drawCheckHeater();
+	return true;
+}
+

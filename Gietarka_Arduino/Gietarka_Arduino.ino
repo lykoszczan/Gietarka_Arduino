@@ -25,11 +25,13 @@ String items[MenuItemsCount] = { "1. Kat: ",
 };
 
 // Definicja elementów menu ustawienieñ
-#define SETTINGS 2 
+#define SETTINGS 4 
 
 String itemsSetting[SETTINGS] = { 
-"1. Kolor tekstu",
-"2. O programie"
+"1. Kalibracja",
+"2. Nastawy regulatora",
+"3. Kolor tekstu",
+"4. O programie"
 };
 
 // kolor tekstu
@@ -38,7 +40,7 @@ int GLOBAL_TEXT_COLOR;
 // wlasne kolory
 #define SELECTED_COLOR 0x00FF
 #define WARNING_COLOR 0xF800
-#define EDIT_COLOR 0xFF00
+#define EDIT_COLOR 0xBD00
 
 // Definicja dostêpnych kolorów wyœwietlania tekstu
 String Colors[4] = {
@@ -110,7 +112,7 @@ int EEPROM_LAST_COLOR = 5;
 #define MIN_TEMP 30
 
 // czas [ms] po którym grzalka zostanie wylaczona jesli program wykryje ze uzytkownik nie wykonuje zadnych czynnosci
-const unsigned long TIME_TO_STOP_HEAT = 120000;
+const unsigned long TIME_TO_STOP_HEAT = 300000;
 unsigned long timeElapsed;
 
 // kierunek wychylenia ga³ki joysticka
@@ -122,10 +124,13 @@ uint8_t joyIndex;
 int defaultTemp;
 int defaultAngle;
 
+// Slide MOSFET MP
+const uint8_t MOSFET_PIN = 42;
+
 // joystick
 const uint8_t SW_pin = A2; // A2 - ustawione jako cyfrowy pin
-const uint8_t Y_pin = A0; // A0 y - góra/dó³
-const uint8_t X_pin = A1; // A1 x - prawo/lewo
+const uint8_t Y_pin = A1; // A1 y - góra/dó³
+const uint8_t X_pin = A0; // A0 x - prawo/lewo
 
 // zakresy wychylenia drazka  //przedzialy dla 5V
 #define MIDDLE_MIN_X 200	//minimalna wartosc w srodkowym polozeniu
@@ -143,17 +148,25 @@ TFT_HX8357 tft = TFT_HX8357();
 // Czujnik temperatury
 Adafruit_MLX90614 mlx = Adafruit_MLX90614();
 
+// czy zosta³y ustawione wartoœci
+bool isTempSet;
+bool isAngleSet;
+
 // ¯yroskop
 MPU6050 accelerometer;
 
-const float pi = 3.141592;
-const int sample_no = 100; // liczba probek potrzebnych do jednego pomiaru kata
-int16_t ax, ay, az;
-float x, y, z;
-int  sample;
-float _angle_x, angle_x, _angle_y, angle_y;
-long ax_sum, ay_sum, az_sum;
+// rysowanie okregu
+struct Point {
+	int x;
+	int y;
+};
 
+const int zeroPointX = 240;
+const int zeroPointY = 220;
+const int radius = 40;
+Point degreesTab[36];
+int beta = -90;
+int pointColor;
 
 void setup() {
 	Wire.begin();
@@ -172,6 +185,9 @@ void setup() {
 	
 	timeElapsed = 0;
 
+	isTempSet = false;
+	isAngleSet = false;
+
 	int colorIndex;
 	// odczyt z EEPROMU ostatniego ustawionego koloru
 	EEPROM_readAnything(EEPROM_LAST_COLOR, colorIndex);
@@ -185,9 +201,20 @@ void setup() {
 	pinMode(Y_pin, INPUT);
 	pinMode(SW_pin, INPUT);
 	digitalWrite(SW_pin, HIGH);
+
+	digitalWrite(MOSFET_PIN, LOW);
+
 	items[0] = items[0] + String(defaultAngle) + " ";
 	items[1] = items[1] + String(defaultTemp) + " C";
-	itemsSetting[0] = itemsSetting[0] + ": " + Colors[colorIndex];
+	itemsSetting[2] = itemsSetting[2] + ": " + Colors[colorIndex];
+
+	// zebranie punktow na okregu, raz to zrobimy na starcie programu to potem juz nie bedzie trzeba tego robic
+	for (int i = 0; i < 36; i++)
+	{
+		degreesTab[i].x = zeroPointX + radius * cos(beta*(PI / 180.0));
+		degreesTab[i].y = zeroPointY + radius * sin(beta*(PI / 180.0));
+		beta = beta + 10;
+	}
 }
 
 
