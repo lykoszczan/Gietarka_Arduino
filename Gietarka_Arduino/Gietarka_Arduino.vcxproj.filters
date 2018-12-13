@@ -19,6 +19,7 @@
     <None Include="Drawers.ino" />
     <None Include="Sensors.ino" />
     <None Include="Routings.ino" />
+    <None Include="PID.ino" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="__vm\.Gietarka_Arduino.vsarduino.h">

@@ -104,6 +104,10 @@ ViewStyle Styles[1] = {
 int EEPROM_LAST_ANGLE = 0;
 int EEPROM_LAST_TEMP = 2;
 int EEPROM_LAST_COLOR = 5;
+int EEPROM_LAST_OFFSET = 8;
+int EEPROM_PID_KP = 15;
+int EEPROM_PID_KI = 17;
+int EEPROM_PID_KD = 19;
 
 // stale dotyczace zakresu temperatury i kata
 #define MAX_ANGLE 150
@@ -112,7 +116,7 @@ int EEPROM_LAST_COLOR = 5;
 #define MIN_TEMP 30
 
 // czas [ms] po którym grzalka zostanie wylaczona jesli program wykryje ze uzytkownik nie wykonuje zadnych czynnosci
-const unsigned long TIME_TO_STOP_HEAT = 300000;
+const unsigned long TIME_TO_STOP_HEAT = 30000;//300000;
 unsigned long timeElapsed;
 
 // kierunek wychylenia ga³ki joysticka
@@ -154,6 +158,23 @@ bool isAngleSet;
 
 // ¯yroskop
 MPU6050 accelerometer;
+int ZaxisOffset;
+
+// Regulator PID
+struct PID_Settings {
+	String name;
+	int value;
+};
+
+#define Kp {"Kp",0}
+#define Ki {"Ki",0}
+#define Kd {"Kd",0}
+
+PID_Settings PID_Items[3]{
+	Kp,
+	Ki,
+	Kd
+};
 
 // rysowanie okregu
 struct Point {
@@ -167,6 +188,14 @@ const int radius = 40;
 Point degreesTab[36];
 int beta = -90;
 int pointColor;
+
+//PID
+float PID_time;
+float PID_error = 0;
+float previous_error = 0;
+float PID_timeElapsed, PID_timePrev;
+float PID_value = 0;
+int PID_p = 0;    int PID_i = 0;    int PID_d = 0;
 
 void setup() {
 	Wire.begin();
@@ -197,6 +226,14 @@ void setup() {
 	EEPROM_readAnything(EEPROM_LAST_TEMP, defaultTemp);
 	EEPROM_readAnything(EEPROM_LAST_ANGLE, defaultAngle);
 
+	// odczyt z EEPROMU ostatniego ustawionego offsetu akcelerometru
+	EEPROM_readAnything(EEPROM_LAST_OFFSET, ZaxisOffset);
+
+	// odczyt z EEPROMU ostatnich nastawów regulatora
+	EEPROM_readAnything(EEPROM_PID_KP, PID_Items[0].value);
+	EEPROM_readAnything(EEPROM_PID_KI, PID_Items[1].value);
+	EEPROM_readAnything(EEPROM_PID_KD, PID_Items[2].value);
+
 	pinMode(X_pin, INPUT);
 	pinMode(Y_pin, INPUT);
 	pinMode(SW_pin, INPUT);
@@ -215,6 +252,8 @@ void setup() {
 		degreesTab[i].y = zeroPointY + radius * sin(beta*(PI / 180.0));
 		beta = beta + 10;
 	}
+
+	PID_time = millis();
 }
 
 

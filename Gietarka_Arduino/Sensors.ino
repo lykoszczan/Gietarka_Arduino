@@ -48,9 +48,9 @@ int waitforactionXY(int wait) // obie osie
 		if (moveVert > MIDDLE_MIN_Y && moveVert < MIDDLE_MAX_Y)
 		{
 			if (moveHorz >= MIDDLE_MAX_X)
-				zwrot = 2;  // LEWO 
+				zwrot = 2;  // PRAWO  ------  jako wcisniecie  
 			else
-				zwrot = 4;  // PRAWO  ------  jako wcisniecie 
+				zwrot = 4;  // LEWO
 		}
 		else
 		{
@@ -105,7 +105,7 @@ double getAngle()
 	{
 		//accelerometer.setXAccelOffset(0);
 		//accelerometer.setYAccelOffset(0);
-		accelerometer.setZAccelOffset(2500);
+		accelerometer.setZAccelOffset(ZaxisOffset);
 
 		accelerometer.getAcceleration(&ax, &ay, &az);
 		ax_sum = ax_sum + ax;
@@ -126,18 +126,17 @@ double getAngle()
 			angle_y = (atan2(-y, z)*180.0) / M_PI;
 			angle_y = 180 - abs(angle_y);
 
-			if (angle_y < 0)
-				angle_y = 0;
-
 			// Reset values for next aproximation   
 			sample = 0;
 			ax_sum = 0;
 			ay_sum = 0;
 			az_sum = 0;
 
-			Serial.print(angle_x);
-			Serial.print("\t"); // \t = tablator 
-			Serial.println(angle_y);
+
+			// debug
+			//Serial.print(angle_x);
+			//Serial.print("\t"); // \t = tablator 
+			//Serial.println(angle_y);
 
 			return angle_y;
 			break;
@@ -153,3 +152,120 @@ bool checkHeater()
 	return true;
 }
 
+void calibration()
+{
+	int move;
+
+	drawCalibartion();
+	while (true)
+	{
+		drawAngleCalibration();
+
+		move = waitforactionXY(50);
+
+		if (move == 1) // góra
+		{
+			ZaxisOffset += 1;
+		}
+		else if (move == 3) // dół
+		{
+			ZaxisOffset -= 1;
+		}
+		else if (move == 4 || move == 5) // lewo - powrót
+		{
+			break;
+		}
+	}
+	EEPROM_writeAnything(EEPROM_LAST_OFFSET, ZaxisOffset);
+	delay(50);
+
+}
+
+void PIDTuning()
+{
+	int move;
+	uint8_t end = 1;
+	int position = 0;
+	drawPIDTuning(position, false, true);
+
+	while (end != 0)
+	{
+		move = waitforactionXY(200);
+		switch (move)
+		{
+			case 1: // góra
+			{
+				if (position == 0)
+					position = 3;
+				else
+					position--;
+				drawPIDTuning(position, false, false);
+				break;
+			}
+			case 2: // prawo - wybór
+			{
+				drawPIDTuning(position, true, false);
+				break;
+			}
+			case 3: // dół
+			{
+				if (position == 3)
+					position = 0;
+				else
+					position++;
+				drawPIDTuning(position, false, false);
+				break;
+			}
+			case 4: // lewo - powrót na strzalce
+			{
+				if (position == 3)
+					end = 0;
+				else
+					drawPIDTuning(position, false, false);
+				break;
+			}
+			case 5: // wcisniecie
+			{
+				if (position == 3)
+					end = 0;
+				else
+				{
+					setPIDValues(position);
+				}
+
+				break;
+			}
+		}
+
+
+	}
+}
+
+void setPIDValues(int position)
+{
+	uint8_t move = 0;
+	int beforemove;
+
+	drawPIDTuning(position, true, false);
+	move = waitforactionXY(200);
+	do
+	{
+		beforemove = PID_Items[position].value;
+		move = waitforactionXY(50);
+		if (move == 1)
+			PID_Items[position].value++;
+		if (move == 3 && PID_Items[position].value>0)
+			PID_Items[position].value--;
+		if(String(beforemove).length() != String(PID_Items[position].value).length())
+			drawPIDTuning(position, true, true);
+		else
+			drawPIDTuning(position, true, false);
+
+	} while (move != 5 && move != 4);
+
+	EEPROM_writeAnything(EEPROM_PID_KP, PID_Items[0].value);
+	EEPROM_writeAnything(EEPROM_PID_KI, PID_Items[1].value);
+	EEPROM_writeAnything(EEPROM_PID_KD, PID_Items[2].value);
+
+	drawPIDTuning(position, false, false);
+}

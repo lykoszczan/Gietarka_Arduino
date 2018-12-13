@@ -113,6 +113,9 @@
     <None Include="Gietarka_Arduino.ino">
       <FileType>CppCode</FileType>
     </None>
+    <None Include="PID.ino">
+      <FileType>CppCode</FileType>
+    </None>
     <None Include="Routings.ino">
       <FileType>CppCode</FileType>
     </None>

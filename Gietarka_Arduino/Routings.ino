@@ -174,12 +174,24 @@ void chooseOptionSettings()
 			{
 				switch (joyIndex)
 				{
-					case 0:       //Kolory
+					case 0:			//kalibracja
+					{
+						calibration();
+						drawSettingsMenu(joyIndex, false, false, true);
+						break;
+					}
+					case 1:			//nastawy regulatora
+					{
+						PIDTuning();
+						drawSettingsMenu(joyIndex, false, false, true);
+						break;
+					}
+					case 2:       //Kolory
 					{
 						drawSetColor();
 						break;
 					}
-					case 1:       //O programie
+					case 3:       //O programie
 					{
 						drawAbout();
 						drawSettingsMenu(joyIndex, false, false, true);
@@ -217,12 +229,14 @@ void chooseOptionSettings()
 				{
 					case 0:			//kalibracja
 					{
-						//drawCalibartion();
-						//RunCalibration();
+						calibration();
+						drawSettingsMenu(joyIndex, false, false, true);
 						break;
 					}
 					case 1:			//nastawy regulatora
 					{
+						PIDTuning();
+						drawSettingsMenu(joyIndex, false, false, true);
 						break;
 					}
 					case 2:       //Kolory

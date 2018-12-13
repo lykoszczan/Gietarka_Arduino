@@ -77,6 +77,7 @@ typedef void *__builtin_va_list;
 
 #include "Gietarka_Arduino.ino"
 #include "Drawers.ino"
+#include "PID.ino"
 #include "Routings.ino"
 #include "Sensors.ino"
 #endif
