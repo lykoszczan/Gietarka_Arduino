@@ -122,6 +122,9 @@
     <None Include="Sensors.ino">
       <FileType>CppCode</FileType>
     </None>
+    <None Include="WorkView.ino">
+      <FileType>CppCode</FileType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Desktop\gietarka\main\EEPROMAnything.h" />
@@ -130,4 +133,9 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties VM.DebugVariablesWindow.ColumnVisibleVariableRefreshOn="1" VM.DebugVariablesWindow.ColumnVisibleVariableHitCount="1" VM.DebugVariablesWindow.ColumnVisibleVariableTimeStamp="1" VM.DebugVariablesWindow.ColumnVisibleBreakPointName="1" VM.DebugVariablesWindow.ColumnVisibleFunctionName="1" />
+    </VisualStudio>
+  </ProjectExtensions>
 </Project>

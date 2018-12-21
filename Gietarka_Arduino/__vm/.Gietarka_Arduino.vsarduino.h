@@ -80,5 +80,6 @@ typedef void *__builtin_va_list;
 #include "PID.ino"
 #include "Routings.ino"
 #include "Sensors.ino"
+#include "WorkView.ino"
 #endif
 #endif

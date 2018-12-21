@@ -76,7 +76,7 @@ void SelectActionMainMenu(int index)
 				if (checkHeater())
 				{
 					timeElapsed = millis();
-					drawWorkView();
+					RunWorkView();
 				}
 				else
 				{

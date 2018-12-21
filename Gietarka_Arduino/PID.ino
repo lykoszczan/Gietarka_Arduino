@@ -5,7 +5,7 @@ void RunPIDController()
 	int kd = PID_Items[2].value;
 
 	//Kalkulacja b³êdu pomiêdzy wartoœci¹ zadan¹ i wielkoœci¹ rzeczywist¹
-	PID_error = defaultTemp - mlx.readObjectTempC();
+	PID_error = defaultTemp - mlx.readObjectTempC() + 3;
 	//Wartoœæ cz³onu P
 	PID_p = 0.01*kp * PID_error;
 	//Wartoœæ cz³onu I
@@ -30,20 +30,13 @@ void RunPIDController()
 	{
 		PID_value = 255;
 	}
-	//Now we can write the PWM signal to the mosfet on digital pin D3
-	//Since we activate the MOSFET with a 0 to the base of the BJT, we write 255-PID value (inverted)
+
 	analogWrite(MOSFET_PIN,PID_value);
 	previous_error = PID_error;     //Remember to store the previous error for next loop.
-
-	delay(250); //Refresh rate + delay of LCD print
-	
-	Serial.println("PID_value: " + String(PID_value));
-
 }
 
 void StopPIDController()
 {
 	PID_value = 0;
 	analogWrite(MOSFET_PIN, PID_value);
-	Serial.println("PID_value: " + String(PID_value));
 }

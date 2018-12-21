@@ -28,7 +28,7 @@ String items[MenuItemsCount] = { "1. Kat: ",
 #define SETTINGS 4 
 
 String itemsSetting[SETTINGS] = { 
-"1. Kalibracja",
+"1. Kalibracja kata",
 "2. Nastawy regulatora",
 "3. Kolor tekstu",
 "4. O programie"
@@ -116,7 +116,7 @@ int EEPROM_PID_KD = 19;
 #define MIN_TEMP 30
 
 // czas [ms] po którym grzalka zostanie wylaczona jesli program wykryje ze uzytkownik nie wykonuje zadnych czynnosci
-const unsigned long TIME_TO_STOP_HEAT = 30000;//300000;
+const unsigned long TIME_TO_STOP_HEAT = 300000;
 unsigned long timeElapsed;
 
 // kierunek wychylenia ga³ki joysticka
@@ -190,11 +190,11 @@ int beta = -90;
 int pointColor;
 
 //PID
-float PID_time;
+unsigned long PID_time;
 float PID_error = 0;
 float previous_error = 0;
 float PID_timeElapsed, PID_timePrev;
-float PID_value = 0;
+int PID_value = 0;
 int PID_p = 0;    int PID_i = 0;    int PID_d = 0;
 
 void setup() {
