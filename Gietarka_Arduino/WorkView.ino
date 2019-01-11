@@ -1,38 +1,43 @@
 void RunWorkView()
 {
 	bool isCanceled = false;
-	double currentTemp, currentAngle;
+	double currentTempObj, currentTempWire, currentAngle;
 	double lastAngle;
 	int move, moveHorz, moveVert;
-	long timeToAprox;
+	long timeToProbe;
 	bool targetValuesReached = false;
 
 	refreshWorkView();
 	drawEndHeat();
 
 	currentAngle = 0;
-	timeToAprox = millis();
+	timeToProbe = millis();
+
+	heatTimeWire = 0;
+	heatTimeObj = 0;
+	isHeatStartWire = true;
+	isHeatStartObj = true;
 	while (true)
 	{
 		// probkowanie co 10 sek czy zmienil sie kat od ostatniego pobranego, jesli nie to po okreslonym czasie bezczynnosc
-		if ((millis() - timeToAprox) > 10000)
+		if ((millis() - timeToProbe) > 10000)
 		{
 			lastAngle = currentAngle;
-			timeToAprox = millis();
+			timeToProbe = millis();
 		}
 
-		//'{@Plot.Values.PID.Red PID_value};{@Plot.Values.Temperature.Green currentTemp};'
+		//'{@Plot.Values.PID.Red PID_value};{@Plot.Values.Temperature.Green currentTempWire};'
 
-		currentTemp = mlx.readObjectTempC();
 		currentAngle = getAngle();
+		currentTempObj = 90;
+		currentTempWire = 120;//mlx.readObjectTempC();
 
-		drawAngle();
-		drawTemperature();
-
-
+		drawAngle(currentAngle);
+		drawTemperature(currentTempWire, currentTempObj);				
+		drawTemperatureTimes(currentTempWire, currentTempObj);
 
 		// po osiagnieciu zadanych wartosci zatrzymujemy grzanie w celu ostygniecia materialu
-		if (currentTemp >= defaultTemp && currentAngle >= defaultAngle)
+		if (currentTempWire >= tempSetPoint && currentAngle >= angleSetPoint)
 		{
 			drawStartHeat(); // grzanie zakonczone - zmieniamy komunikat
 			targetValuesReached = true; // spowoduje to zakonczenie grzania

@@ -170,13 +170,13 @@ void drawDegreeSymbol(int menuIndex, int color)
 		{
 			firstPixel = 170;
 			topPixel = 75;
-			position = space * (String(defaultAngle).length() - 1) + firstPixel;
+			position = space * (String(angleSetPoint).length() - 1) + firstPixel;
 		}
 		if (menuIndex == 1)
 		{
 			firstPixel = 312;
 			topPixel = 107;
-			position = space * (String(defaultTemp).length() - 1) + firstPixel;
+			position = space * (String(tempSetPoint).length() - 1) + firstPixel;
 		}
 		tft.drawCircle(position, topPixel, 5, color);
 	}
@@ -239,25 +239,25 @@ void drawSetAngle()
 	int beforemove;
 
 	isAngleSet = true;
-	items[0] = "1. Kat: " + String(defaultAngle) + " ";
+	items[0] = "1. Kat: " + String(angleSetPoint) + " ";
 	drawMainMenu(0, true, true, false);
 	move = waitforactionXY(200);
 	do
 	{
-		beforemove = defaultAngle;
+		beforemove = angleSetPoint;
 		move = waitforactionXY(50);
-		if (move == 1 && defaultAngle<MAX_ANGLE)
-			defaultAngle++;
-		if (move == 3 && defaultAngle>MIN_ANGLE)
-			defaultAngle--;
-		items[0] = "1. Kat: " + String(defaultAngle) + " ";
-		if (String(defaultAngle).length() != String(beforemove).length())
+		if (move == 1 && angleSetPoint<MAX_ANGLE)
+			angleSetPoint++;
+		if (move == 3 && angleSetPoint>MIN_ANGLE)
+			angleSetPoint--;
+		items[0] = "1. Kat: " + String(angleSetPoint) + " ";
+		if (String(angleSetPoint).length() != String(beforemove).length())
 			drawMainMenu(0, true, false, true);
 		else
 			drawMainMenu(0, true, true, false);
 
 	} while (move != 5 && move != 4);
-	EEPROM_writeAnything(EEPROM_LAST_ANGLE, defaultAngle);
+	EEPROM_writeAnything(EEPROM_LAST_ANGLE, angleSetPoint);
 
 	drawMainMenu(0, false, true, false);
 }
@@ -269,31 +269,31 @@ void drawSetTemp()
 	int beforemove;
 
 	isTempSet = true;
-	items[1] = "2. Temperatura: " + String(defaultTemp) + " C";
+	items[1] = "2. Temperatura: " + String(tempSetPoint) + " C";
 	drawMainMenu(1, true, true, false);
 	move = waitforactionXY(200);
 	do
 	{
-		beforemove = defaultTemp;
+		beforemove = tempSetPoint;
 		move = waitforactionXY(wait);
-		if (move == 1 && defaultTemp<MAX_TEMP)
+		if (move == 1 && tempSetPoint<MAX_TEMP)
 		{
-			defaultTemp++;
+			tempSetPoint++;
 		}
-		if (move == 3 && defaultTemp>MIN_TEMP)
+		if (move == 3 && tempSetPoint>MIN_TEMP)
 		{
-			defaultTemp--;
+			tempSetPoint--;
 		}
 
-		items[1] = "2. Temperatura: " + String(defaultTemp) + " C";
-		if (String(defaultTemp).length() != String(beforemove).length())
+		items[1] = "2. Temperatura: " + String(tempSetPoint) + " C";
+		if (String(tempSetPoint).length() != String(beforemove).length())
 			drawMainMenu(1, true, false, true);
 		else
 			drawMainMenu(1, true, true, false);
 
 	} while (move != 5 && move != 4);
 
-	EEPROM_writeAnything(EEPROM_LAST_TEMP, defaultTemp);
+	EEPROM_writeAnything(EEPROM_LAST_TEMP, tempSetPoint);
 
 	drawMainMenu(1, false, true, false);
 }
@@ -302,14 +302,33 @@ void refreshWorkView()
 {
 	tft.fillScreen(TFT_BLACK);
 	tft.setTextSize(2);
-	tft.setCursor(40, 50);
+	tft.setCursor(30, 20);
 	tft.setTextColor(GLOBAL_TEXT_COLOR, TFT_BLACK);
-	tft.println("Kat = " + String(defaultAngle));
-	tft.drawRoundRect(40, 100, 180, 100, 3, TFT_WHITE);  //K¹t
+	tft.println("Kat = " + String(angleSetPoint));
+	if (String(angleSetPoint).length() == 3)
+	{
+		tft.drawCircle(141, 22, 2, GLOBAL_TEXT_COLOR);		
+	}
+	else
+	{
+		tft.drawCircle(130, 22, 2, GLOBAL_TEXT_COLOR);
+	}
+	tft.drawRoundRect(30, 60, 180, 140, 3, TFT_WHITE);  //K¹t
 
-	tft.setCursor(260, 50);
-	tft.println("Temperatura = " + String(defaultTemp));
-	tft.drawRoundRect(260, 100, 180, 100, 3, TFT_WHITE);  //Temperatura
+	tft.setCursor(255, 20);
+	tft.println("Temperatura = " + String(tempSetPoint));
+	if (String(tempSetPoint).length() == 3)
+	{
+		tft.drawCircle(462, 22, 2, GLOBAL_TEXT_COLOR);
+		tft.setCursor(467, 20);
+	}
+	else
+	{
+		tft.drawCircle(451, 22, 2, GLOBAL_TEXT_COLOR);
+		tft.setCursor(456, 20);
+	}
+	tft.println("C");
+	tft.drawRoundRect(255, 60, 205, 140, 3, TFT_WHITE);  //Temperatura
 }
 
 void drawStopHeat() //-- po bezczynnosci
@@ -400,7 +419,7 @@ void drawStartHeat()
 
 void showWarning(double temp)
 {
-	if (temp<defaultTemp)
+	if (temp<tempSetPoint)
 	{
 		tft.setCursor(120, 230);
 		tft.setTextColor(WARNING_COLOR, TFT_BLACK);
@@ -418,37 +437,102 @@ void showWarning(double temp)
 	}
 }
 
-void drawTemperature()
+void drawTemperatureTimes(double currentTempWire, double currentTempObj)
 {
-	double temp = mlx.readObjectTempC(); 
-	String outText = String(temp);
+	if (currentTempWire >= tempSetPoint - 5)
+	{
+		if (isHeatStartWire)
+		{
+			heatTimeWire = millis();
+			isHeatStartWire = false;
+		}
+
+		tft.setCursor(270, 110);
+		tft.setTextColor(GLOBAL_TEXT_COLOR, TFT_BLACK);
+		tft.println("t = " + String(int((millis() - heatTimeWire) / 1000)) + "s");
+	}
+	else
+	{
+		isHeatStartWire = true;
+		tft.setCursor(270, 110);
+		tft.setTextColor(GLOBAL_TEXT_COLOR, TFT_BLACK);
+		tft.println("             ");
+	}
+
+	if (currentTempObj >= tempSetPoint - 5)
+	{
+		if (isHeatStartObj)
+		{
+			heatTimeObj = millis();
+			isHeatStartObj = false;
+		}
+		tft.setCursor(270, 175);
+		tft.setTextColor(GLOBAL_TEXT_COLOR, TFT_BLACK);
+		tft.println("t = " + String(int((millis() - heatTimeObj) / 1000)) + "s");
+	}
+	else
+	{
+		isHeatStartObj = true;
+		tft.setCursor(270, 175);
+		tft.setTextColor(GLOBAL_TEXT_COLOR, TFT_BLACK);
+		tft.println("             ");
+	}
+}
+
+void drawTemperature(double tempWire, double tempObj)
+{
+	String outText; 
+
+	// Temperatura drutu
+	outText = String(tempWire);
 	outText = outText.substring(0, 5);
-	tft.setCursor(270, 130);
-	tft.setTextSize(4);
-	if (temp<defaultTemp)
+	tft.setCursor(270, 80);
+	tft.setTextSize(3);
+	if (tempWire<tempSetPoint)
 	{
 		tft.setTextColor(WARNING_COLOR, TFT_BLACK);
-		tft.println(outText);
-		tft.drawCircle(400, 135, 5, WARNING_COLOR);
-		tft.setCursor(410, 130);
+		tft.println("D: " + outText);
+		tft.drawCircle(420, 85, 5, WARNING_COLOR);
+		tft.setCursor(430, 80);
 		tft.println("C");
 	}
 	else
 	{
 		tft.setTextColor(TFT_GREEN, TFT_BLACK);
-		tft.println(outText);
-		tft.drawCircle(400, 135, 5, TFT_GREEN);
-		tft.setCursor(410, 130);
+		tft.println("D: " + outText);
+		tft.drawCircle(420, 85, 5, TFT_GREEN);
+		tft.setCursor(430, 80);
 		tft.println("C");
 	}
-	showWarning(temp);
+
+	// Temperatura materia³u
+	tft.setCursor(270, 145);
+	tft.setTextSize(3);
+	outText = String(tempObj);
+	outText = outText.substring(0, 5);
+	if (tempObj<tempSetPoint)
+	{
+		tft.setTextColor(WARNING_COLOR, TFT_BLACK);
+		tft.println("M: " + outText);
+		tft.drawCircle(420, 150, 5, WARNING_COLOR);
+		tft.setCursor(430, 145);
+		tft.println("C");
+	}
+	else
+	{
+		tft.setTextColor(TFT_GREEN, TFT_BLACK);
+		tft.println("M: " + outText);
+		tft.drawCircle(420, 150, 5, TFT_GREEN);
+		tft.setCursor(430, 145);
+		tft.println("C");
+	}
 
 
+	showWarning(tempWire);
 }
 
-void drawAngle()
+void drawAngle(double currentAngle)
 {
-	double currentAngle = abs(getAngle());
 	String outText = String(abs(currentAngle));
     
 	if (outText.length() < 5)
@@ -458,19 +542,19 @@ void drawAngle()
 
 	outText = outText.substring(0, 5);
 
-	tft.setCursor(60, 130);
-	tft.setTextSize(4);
-	if (currentAngle<defaultAngle)
+	tft.setCursor(40, 110);
+	tft.setTextSize(5);
+	if (currentAngle<angleSetPoint)
 	{
 		tft.setTextColor(WARNING_COLOR, TFT_BLACK);
 		tft.println(outText);
-		tft.drawCircle(185, 135, 5, WARNING_COLOR);
+		tft.drawCircle(195, 115, 5, WARNING_COLOR);
 	}
 	else
 	{
 		tft.setTextColor(TFT_GREEN, TFT_BLACK);
 		tft.println(outText);
-		tft.drawCircle(185, 135, 5, TFT_GREEN);
+		tft.drawCircle(195, 115, 5, TFT_GREEN);
 	}
 
 }

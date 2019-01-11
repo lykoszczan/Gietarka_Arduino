@@ -125,8 +125,14 @@ int joypos;
 uint8_t joyIndex;
 
 // zadany kat i temperatura
-int defaultTemp;
-int defaultAngle;
+int tempSetPoint;
+int angleSetPoint;
+
+// do obs³ugi czasów nagrzania drutu i materia³u
+long heatTimeWire;
+long heatTimeObj;
+bool isHeatStartWire;
+bool isHeatStartObj;
 
 // Slide MOSFET MP
 const uint8_t MOSFET_PIN = 42;
@@ -223,8 +229,8 @@ void setup() {
 	GLOBAL_TEXT_COLOR = ColorsValues[colorIndex];
 
 	// odczyt z EEPROMU ostatniej ustawionej temperatury i kata
-	EEPROM_readAnything(EEPROM_LAST_TEMP, defaultTemp);
-	EEPROM_readAnything(EEPROM_LAST_ANGLE, defaultAngle);
+	EEPROM_readAnything(EEPROM_LAST_TEMP, tempSetPoint);
+	EEPROM_readAnything(EEPROM_LAST_ANGLE, angleSetPoint);
 
 	// odczyt z EEPROMU ostatniego ustawionego offsetu akcelerometru
 	EEPROM_readAnything(EEPROM_LAST_OFFSET, ZaxisOffset);
@@ -241,8 +247,8 @@ void setup() {
 
 	digitalWrite(MOSFET_PIN, LOW);
 
-	items[0] = items[0] + String(defaultAngle) + " ";
-	items[1] = items[1] + String(defaultTemp) + " C";
+	items[0] = items[0] + String(angleSetPoint) + " ";
+	items[1] = items[1] + String(tempSetPoint) + " C";
 	itemsSetting[2] = itemsSetting[2] + ": " + Colors[colorIndex];
 
 	// zebranie punktow na okregu, raz to zrobimy na starcie programu to potem juz nie bedzie trzeba tego robic

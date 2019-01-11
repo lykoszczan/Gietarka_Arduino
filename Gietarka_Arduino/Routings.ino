@@ -295,12 +295,12 @@ void chooseProfile()
 				if (joyIndex != ProfilesCount)
 				{
 					isTempSet = true;
-					defaultAngle = ProfilesValues[joyIndex].angleValue;
-					defaultTemp = ProfilesValues[joyIndex].tempValue;
-					EEPROM_writeAnything(EEPROM_LAST_ANGLE, defaultAngle);
-					EEPROM_writeAnything(EEPROM_LAST_TEMP, defaultTemp);
-					items[0] = "1. Kat: " + String(defaultAngle) + " ";
-					items[1] = "2. Temperatura: " + String(defaultTemp) + " C";
+					angleSetPoint = ProfilesValues[joyIndex].angleValue;
+					tempSetPoint = ProfilesValues[joyIndex].tempValue;
+					EEPROM_writeAnything(EEPROM_LAST_ANGLE, angleSetPoint);
+					EEPROM_writeAnything(EEPROM_LAST_TEMP, tempSetPoint);
+					items[0] = "1. Kat: " + String(angleSetPoint) + " ";
+					items[1] = "2. Temperatura: " + String(tempSetPoint) + " C";
 					joyIndex = 0;
 					end = 0;
 				}
@@ -339,12 +339,12 @@ void chooseProfile()
 				else
 				{
 					isTempSet = true;
-					defaultAngle = ProfilesValues[joyIndex].angleValue;
-					defaultTemp = ProfilesValues[joyIndex].tempValue;
-					EEPROM_writeAnything(EEPROM_LAST_ANGLE, defaultAngle);
-					EEPROM_writeAnything(EEPROM_LAST_TEMP, defaultTemp);
-					items[0] = "1. Kat: " + String(defaultAngle) + " ";
-					items[1] = "2. Temperatura: " + String(defaultTemp) + " C";
+					angleSetPoint = ProfilesValues[joyIndex].angleValue;
+					tempSetPoint = ProfilesValues[joyIndex].tempValue;
+					EEPROM_writeAnything(EEPROM_LAST_ANGLE, angleSetPoint);
+					EEPROM_writeAnything(EEPROM_LAST_TEMP, tempSetPoint);
+					items[0] = "1. Kat: " + String(angleSetPoint) + " ";
+					items[1] = "2. Temperatura: " + String(tempSetPoint) + " C";
 					joyIndex = 0;
 					end = 0;
 				}
