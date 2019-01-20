@@ -1,12 +1,12 @@
 void RunWorkView()
 {
 	bool isCanceled = false;
-	double currentTempObj, currentTempWire, currentAngle;
-	double lastAngle;
+	double currentTempObj, currentTempWire, currentAngle, currentTableTemp;
+	double lastAngle = 0;
 	int move, moveHorz, moveVert;
 	long timeToProbe;
-	bool targetValuesReached = false;
-
+	
+	targetValuesReached = false;
 	refreshWorkView();
 	drawEndHeat();
 
@@ -19,31 +19,33 @@ void RunWorkView()
 	isHeatStartObj = true;
 	while (true)
 	{
-		// probkowanie co 10 sek czy zmienil sie kat od ostatniego pobranego, jesli nie to po okreslonym czasie bezczynnosc
-		if ((millis() - timeToProbe) > 10000)
-		{
-			lastAngle = currentAngle;
-			timeToProbe = millis();
-		}
-
-		//'{@Plot.Values.PID.Red PID_value};{@Plot.Values.Temperature.Green currentTempWire};'
+		//'{@Plot.Values.PID.Red PID_value};{@Plot.Values.Temperature.Green currentTempWire};{@Plot.Values.Temperature.Blue currentTempObj}'
 
 		currentAngle = getAngle();
-		currentTempObj = 90;
-		currentTempWire = 120;//mlx.readObjectTempC();
+		currentTempObj = mlxObj.readObjectTempC();
+		currentTempWire = mlxWire.readObjectTempC();
+		currentTableTemp = 10; //readThermistorTemperature()
+
+		if (currentTableTemp >= MAX_TABLE_TEMP)
+		{
+			StopPIDController();
+			drawTableIsHot();
+			waitforactionXY(50);
+			refreshWorkView();
+		}
 
 		drawAngle(currentAngle);
 		drawTemperature(currentTempWire, currentTempObj);				
 		drawTemperatureTimes(currentTempWire, currentTempObj);
 
-		// po osiagnieciu zadanych wartosci zatrzymujemy grzanie w celu ostygniecia materialu
-		if (currentTempWire >= tempSetPoint && currentAngle >= angleSetPoint)
+		// w momencie wykrycia giêcia materia³u zatrzymujemy grzanie
+		if ((lastAngle > currentAngle + 5) || (lastAngle < currentAngle - 5))
 		{
 			drawStartHeat(); // grzanie zakonczone - zmieniamy komunikat
 			targetValuesReached = true; // spowoduje to zakonczenie grzania
 		}
 
-		if (!targetValuesReached)
+		if (!targetValuesReached && (currentTempWire <= MAX_TEMP || currentTempObj > 90)) //temperatura mniejsza od max, ze wzglêdu gdyby nie by³o materia³u i wtedy ci¹gle by grza³o
 		{
 			RunPIDController();
 		}
@@ -66,10 +68,6 @@ void RunWorkView()
 			}
 			timeElapsed = millis();
 
-		}
-		if ((lastAngle > currentAngle + 5) || (lastAngle < currentAngle - 5))
-		{
-			timeElapsed = millis();
 		}
 		// -----
 
@@ -97,6 +95,8 @@ void RunWorkView()
 				RunPIDController();
 				drawEndHeat();
 				targetValuesReached = false;
+				timeElapsed = millis();
+				lastAngle = currentAngle;
 			}
 		}
 		if (moveHorz < MIDDLE_MIN_X) // czy jest wychylony w lewo analog

@@ -68,11 +68,11 @@ struct Profiles
 	int tempValue;
 };
 
-#define Profile1 {"PMMA ", 45, 200}
+#define Profile1 {"PMMA ", 45, 100}
 #define Profile2 {"PC   ", 60, 150}
-#define Profile3 {"PS   ", 90, 250}
-#define Profile4 {"PETG ", 30, 300}
-#define Profile5 {"PVC  ", 40, 380}
+#define Profile3 {"PS   ", 90, 120}
+#define Profile4 {"PETG ", 30, 130}
+#define Profile5 {"PVC  ", 40, 110}
 
 #define ProfilesCount 5
 
@@ -112,8 +112,9 @@ int EEPROM_PID_KD = 19;
 // stale dotyczace zakresu temperatury i kata
 #define MAX_ANGLE 150
 #define MIN_ANGLE 1
-#define MAX_TEMP 380
+#define MAX_TEMP 160
 #define MIN_TEMP 30
+#define MAX_TABLE_TEMP 50
 
 // czas [ms] po którym grzalka zostanie wylaczona jesli program wykryje ze uzytkownik nie wykonuje zadnych czynnosci
 const unsigned long TIME_TO_STOP_HEAT = 300000;
@@ -133,6 +134,9 @@ long heatTimeWire;
 long heatTimeObj;
 bool isHeatStartWire;
 bool isHeatStartObj;
+
+// czy wartoœci zosta³y osi¹gniête - jeœli ta zmienna jest true to wtedy grzalka jest wylaczona
+bool targetValuesReached;
 
 // Slide MOSFET MP
 const uint8_t MOSFET_PIN = 42;
@@ -155,8 +159,12 @@ const uint8_t X_pin = A0; // A0 x - prawo/lewo
 // Ekran LCD
 TFT_HX8357 tft = TFT_HX8357();
 
-// Czujnik temperatury
-Adafruit_MLX90614 mlx = Adafruit_MLX90614();
+// W przyszlosci gdyby ktos chcial zmienic czujnik to domyslnym adresem jest 0x5a, aby zmienic adres czujnika nalezy uzyc funkcji MLX90614_Set_Adress dostepnej w bibliotece SparkFunMLX90614
+
+// Czujnik temperatury drutu
+Adafruit_MLX90614 mlxWire = Adafruit_MLX90614(0x5b);
+// Czujnik temperatury materialu
+Adafruit_MLX90614 mlxObj = Adafruit_MLX90614(0x5a);
 
 // czy zosta³y ustawione wartoœci
 bool isTempSet;
@@ -213,7 +221,8 @@ void setup() {
 	tft.setRotation(3);
 	tft.setTextFont(1);
 
-	mlx.begin();
+	mlxWire.begin();
+	mlxObj.begin();
 
 	joypos = 1;
 	joyIndex = 0;

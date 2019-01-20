@@ -113,24 +113,32 @@ void drawCheckHeater()
 	tft.setTextColor(GLOBAL_TEXT_COLOR, TFT_BLACK);
 	tft.setCursor(35, 100);
 	tft.println("Sprawdzam grzalke");
-	//drawLoadGifERROR();
-	drawLoadGifOK();
-}
 
-void drawLoadGifERROR()
-{
 	for (int i = 0; i < 36; i++)
 	{
 		tft.drawPixel(degreesTab[i].x, degreesTab[i].y, TFT_RED);
 		delay(50);
 	}
-	delay(100);
+}
+
+void drawLoadGifERROR()
+{
+	tft.setTextSize(4);
+	tft.setTextColor(TFT_RED, TFT_BLACK);
+	tft.setCursor(35, 100);
+	tft.println("Sprawdzam grzalke");
+
+	tft.drawLine(zeroPointX - 25, zeroPointY - 25, zeroPointX + 25, zeroPointY + 25, TFT_RED);
+	tft.drawLine(zeroPointX - 25, zeroPointY + 25, zeroPointX + 25, zeroPointY - 25, TFT_RED);
+	delay(200);
 
 	tft.fillScreen(TFT_RED);
-	tft.setTextSize(3);
-	tft.setCursor(15, 50);
+	tft.setTextSize(4);
+	tft.setCursor(30, 100);
 	tft.setTextColor(TFT_BLACK);
-	tft.println("Brak zasilania na grzalce");
+	tft.println("Grzalka nie dziala");
+	tft.setCursor(160, 130);
+	tft.println("poprawnie");
 	tft.setTextColor(TFT_BLACK, SELECTED_COLOR);
 	tft.setCursor(zeroPointX - 20, zeroPointY - 15);
 	tft.setTextSize(4);
@@ -143,19 +151,13 @@ void drawLoadGifOK()
 {
 	for (int i = 0; i < 36; i++)
 	{
-		tft.drawPixel(degreesTab[i].x, degreesTab[i].y, TFT_RED);
-		delay(20);
-	}
-	delay(100);
-	for (int i = 0; i < 36; i++)
-	{
 		tft.drawPixel(degreesTab[i].x, degreesTab[i].y, TFT_GREEN);
 	}
 	tft.setTextColor(TFT_GREEN);
 	tft.setTextSize(4);
 	tft.setCursor(zeroPointX - 20, zeroPointY - 15);
 	tft.println("OK");
-	delay(500);
+	delay(200);
 }
 
 void drawDegreeSymbol(int menuIndex, int color)
@@ -345,6 +347,24 @@ void drawStopHeat() //-- po bezczynnosci
 	tft.println("NIE");
 }
 
+void drawTableIsHot()
+{
+	tft.fillScreen(TFT_RED);
+	tft.setTextSize(3);
+	tft.setCursor(10, 80);
+	tft.setTextColor(TFT_BLACK, TFT_BLACK);
+	tft.println("Grzanie zostalo wylaczone");// \nUrzadzenie jest za gorace\n     Poczekaj az ostygnie");
+	tft.setCursor(12, 110);
+	tft.println("Urzadzenie jest za gorace");
+	tft.setCursor(60, 140);
+	tft.println("Poczekaj az ostygnie");
+
+	tft.setTextColor(TFT_BLACK, SELECTED_COLOR);
+	tft.setCursor(zeroPointX - 20, zeroPointY - 15);
+	tft.setTextSize(4);
+	tft.println("OK");
+}
+
 void drawAnswer(boolean firsttime, int index, int StyleIndex)
 {
 	if (firsttime)
@@ -419,21 +439,31 @@ void drawStartHeat()
 
 void showWarning(double temp)
 {
-	if (temp<tempSetPoint)
+	if (!targetValuesReached)
 	{
-		tft.setCursor(120, 230);
-		tft.setTextColor(WARNING_COLOR, TFT_BLACK);
-		tft.setTextSize(2);
-		tft.println("Zaczekaj az grzalka \n          osiagnie temperature");
-		tft.setTextColor(TFT_GREEN);
+		if (temp<tempSetPoint)
+		{
+			tft.setCursor(120, 230);
+			tft.setTextColor(WARNING_COLOR, TFT_BLACK);
+			tft.setTextSize(2);
+			tft.println(" Zaczekaj az grzalka     \n          osiagnie temperature            ");
+			tft.setTextColor(TFT_GREEN);
+		}
+		else
+		{
+			tft.setCursor(120, 230);
+			tft.setTextColor(TFT_GREEN, TFT_BLACK);
+			tft.setTextSize(2);
+			tft.println(" Grzalka osiagnela      \n              temperature                ");
+
+		}
 	}
 	else
 	{
 		tft.setCursor(120, 230);
 		tft.setTextColor(TFT_GREEN, TFT_BLACK);
 		tft.setTextSize(2);
-		tft.println(" Grzalka osiagnela      \n              temperature                    ");
-		
+		tft.println("Grzalka jest wylaczona      \n     Wybierz aby uruchomic ponownie        ");
 	}
 }
 
@@ -447,14 +477,14 @@ void drawTemperatureTimes(double currentTempWire, double currentTempObj)
 			isHeatStartWire = false;
 		}
 
-		tft.setCursor(270, 110);
+		tft.setCursor(260, 110);
 		tft.setTextColor(GLOBAL_TEXT_COLOR, TFT_BLACK);
 		tft.println("t = " + String(int((millis() - heatTimeWire) / 1000)) + "s");
 	}
 	else
 	{
 		isHeatStartWire = true;
-		tft.setCursor(270, 110);
+		tft.setCursor(260, 110);
 		tft.setTextColor(GLOBAL_TEXT_COLOR, TFT_BLACK);
 		tft.println("             ");
 	}
@@ -466,14 +496,14 @@ void drawTemperatureTimes(double currentTempWire, double currentTempObj)
 			heatTimeObj = millis();
 			isHeatStartObj = false;
 		}
-		tft.setCursor(270, 175);
+		tft.setCursor(260, 175);
 		tft.setTextColor(GLOBAL_TEXT_COLOR, TFT_BLACK);
 		tft.println("t = " + String(int((millis() - heatTimeObj) / 1000)) + "s");
 	}
 	else
 	{
 		isHeatStartObj = true;
-		tft.setCursor(270, 175);
+		tft.setCursor(260, 175);
 		tft.setTextColor(GLOBAL_TEXT_COLOR, TFT_BLACK);
 		tft.println("             ");
 	}
@@ -486,44 +516,58 @@ void drawTemperature(double tempWire, double tempObj)
 	// Temperatura drutu
 	outText = String(tempWire);
 	outText = outText.substring(0, 5);
-	tft.setCursor(270, 80);
-	tft.setTextSize(3);
+	tft.setCursor(260, 83);
 	if (tempWire<tempSetPoint)
 	{
 		tft.setTextColor(WARNING_COLOR, TFT_BLACK);
-		tft.println("D: " + outText);
-		tft.drawCircle(420, 85, 5, WARNING_COLOR);
-		tft.setCursor(430, 80);
+		tft.setTextSize(2);
+		tft.println("Drut:");
+		tft.setTextSize(3);
+		tft.setCursor(330, 80);
+		tft.println(outText);
+		tft.drawCircle(425, 85, 5, WARNING_COLOR);
+		tft.setCursor(435, 80);
 		tft.println("C");
 	}
 	else
 	{
 		tft.setTextColor(TFT_GREEN, TFT_BLACK);
-		tft.println("D: " + outText);
-		tft.drawCircle(420, 85, 5, TFT_GREEN);
-		tft.setCursor(430, 80);
+		tft.setTextSize(2);
+		tft.println("Drut:");
+		tft.setTextSize(3);
+		tft.setCursor(330, 80);
+		tft.println(outText);
+		tft.drawCircle(425, 85, 5, TFT_GREEN);
+		tft.setCursor(435, 80);
 		tft.println("C");
 	}
 
 	// Temperatura materia³u
-	tft.setCursor(270, 145);
-	tft.setTextSize(3);
+	tft.setCursor(260, 148);
 	outText = String(tempObj);
 	outText = outText.substring(0, 5);
 	if (tempObj<tempSetPoint)
 	{
 		tft.setTextColor(WARNING_COLOR, TFT_BLACK);
-		tft.println("M: " + outText);
-		tft.drawCircle(420, 150, 5, WARNING_COLOR);
-		tft.setCursor(430, 145);
+		tft.setTextSize(2);
+		tft.println("Mat:");
+		tft.setTextSize(3);
+		tft.setCursor(330, 145);
+		tft.println(outText);
+		tft.drawCircle(425, 150, 5, WARNING_COLOR);
+		tft.setCursor(435, 145);
 		tft.println("C");
 	}
 	else
 	{
 		tft.setTextColor(TFT_GREEN, TFT_BLACK);
-		tft.println("M: " + outText);
-		tft.drawCircle(420, 150, 5, TFT_GREEN);
-		tft.setCursor(430, 145);
+		tft.setTextSize(2);
+		tft.println("Mat:");
+		tft.setTextSize(3);
+		tft.setCursor(330, 145);
+		tft.println(outText);
+		tft.drawCircle(425, 150, 5, TFT_GREEN);
+		tft.setCursor(435, 145);
 		tft.println("C");
 	}
 

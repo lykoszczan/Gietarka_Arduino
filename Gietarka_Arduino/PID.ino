@@ -5,7 +5,7 @@ void RunPIDController()
 	int kd = PID_Items[2].value;
 
 	//Kalkulacja b³êdu pomiêdzy wartoœci¹ zadan¹ i wielkoœci¹ rzeczywist¹
-	PID_error = tempSetPoint - mlx.readObjectTempC() + 3;
+	PID_error = tempSetPoint - mlxObj.readObjectTempC() + 3; //sterujemy temperatur¹ materia³u a nie drutu
 	//Wartoœæ cz³onu P
 	PID_p = 0.01*kp * PID_error;
 	//Wartoœæ cz³onu I

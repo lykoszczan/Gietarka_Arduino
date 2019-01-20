@@ -15,8 +15,15 @@
       <CurveColor>Green</CurveColor>
       <ChartAssignment2>1</ChartAssignment2>
     </CurveSettings>
+    <CurveSettings>
+      <CurveId>TemperatureObj</CurveId>
+      <CurveDisplayName>TemperatureObj</CurveDisplayName>
+      <CurveLineTicks>None</CurveLineTicks>
+      <CurveColor>Blue</CurveColor>
+      <ChartAssignment2>2</ChartAssignment2>
+    </CurveSettings>
   </CurveSettingCollection>
-  <XSweepTime>2 min</XSweepTime>
+  <XSweepTime>5 min</XSweepTime>
   <XTimeFormat>Auto</XTimeFormat>
   <DisplayRefreshRate>AsDataComesIn</DisplayRefreshRate>
   <ChartType>LineChart</ChartType>
