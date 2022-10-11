@@ -1,3 +1,5 @@
 # Gietarka_Arduino
 
-see [bachelor thesis file](https://github.com/lykoszczan/Gietarka_Arduino/blob/master/MT_1ST_278279.pdf)
+Bachelor thesis - Implementation of the controller of the heating unit of the bending station for thermoplastic materials.
+
+See [bachelor thesis file](https://github.com/lykoszczan/Gietarka_Arduino/blob/master/MT_1ST_278279.pdf)
